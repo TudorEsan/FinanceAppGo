@@ -1,0 +1,104 @@
+package helpers
+
+import (
+	"App/models"
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+type SignedDetails struct {
+	Email    string
+	Username string
+	Id       string
+	jwt.StandardClaims
+}
+
+var SECRET_KEY []byte = getSecretKey()
+
+func GenerateTokens(user models.User) (string, string, error) {
+	claims := &SignedDetails{
+		Email:    *user.Email,
+		Username: *user.Email,
+		Id:       user.ID.Hex(),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Local().Add(time.Minute * 15).Unix(),
+		},
+	}
+	refreshClaims := &SignedDetails{
+		Id: user.ID.Hex(),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Local().Add(time.Hour * 24 * 30).Unix(),
+		},
+	}
+
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(SECRET_KEY)
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(SECRET_KEY)
+	if err != nil {
+		fmt.Print(err.Error(), "\n\n\n\n\n")
+		return "", "", err
+	}
+	return token, refreshToken, nil
+}
+
+func ValidateToken(signedToken string) (*SignedDetails, error) {
+	token, err := jwt.ParseWithClaims(signedToken, &SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SECRET_KEY), nil
+	})
+	if err != nil && !strings.Contains(err.Error(), "expired") {
+		fmt.Println("token expired?")
+		return nil, err
+	}
+	claims, ok := token.Claims.(*SignedDetails)
+	if !ok {
+		return nil, errors.New("token not valid")
+	}
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		return nil, errors.New("token expired")
+	}
+	return claims, nil
+}
+
+func ValidateRefreshToken(refreshToken string) (*models.User, error) {
+	token, err := jwt.ParseWithClaims(refreshToken, &SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SECRET_KEY), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(*SignedDetails)
+	if !ok {
+		return nil, errors.New("token not valid")
+	}
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		return nil, errors.New("refresh token expired")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	var user models.User
+	id, err := primitive.ObjectIDFromHex(claims.Id)
+	if err != nil {
+		return nil, errors.New("not valid object id")
+	}
+	err = userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	if *user.RefreshToken != refreshToken {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func getSecretKey() []byte {
+	envs, _ := godotenv.Read(".env")
+	return []byte(envs["JWT_SECRET"])
+}

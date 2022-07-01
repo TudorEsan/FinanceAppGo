@@ -12,20 +12,22 @@ type Diversificationable interface {
 }
 
 type NetWorth struct {
-	Id      primitive.ObjectID
-	Records []Record `json:"records" bson:"records"`
+	Id      primitive.ObjectID `json:"id" bson:"_id"`
+	UserId  primitive.ObjectID `json:"userId" bson:"userId" validate:"required"`
+	Records []Record           `json:"records" bson:"records"`
 }
 
 type Record struct {
-	Date                  time.Time         `json:"date" bson:"date"`
-	CurrentMoney          float32           `json:"currentMoney" bson:"currentMoney" validate:"required"`
-	Stocks                Stocks            `json:"stocks" bson:"stocks"`
-	Cryptos               Cryptos           `json:"cryptos" bson:"cryptos"`
-	StockDiversification  []Diversification `json:"stockDiversification"`
-	CryptoDiversification []Diversification `json:"cryptoDiversification"`
-	CryptoWorth           float32           `json:"cryptoWorth,omitempty"`
-	StockWorth            float32           `json:"stockWorth,omitempty"`
-	Liquidity             float32           `json:"liquidity" validate:"required"`
+	Id                    primitive.ObjectID `json:"id" bson:"id"`
+	Date                  time.Time          `json:"date" bson:"date" validate:"required"`
+	CurrentMoney          float32            `json:"currentMoney" bson:"currentMoney" validate:"required"`
+	Stocks                Stocks             `json:"stocks" bson:"stocks"`
+	Cryptos               Cryptos            `json:"cryptos" bson:"cryptos"`
+	StockDiversification  []Diversification  `json:"stockDiversification"`
+	CryptoDiversification []Diversification  `json:"cryptoDiversification"`
+	CryptoWorth           float32            `json:"cryptoWorth,omitempty"`
+	StockWorth            float32            `json:"stockWorth,omitempty"`
+	Liquidity             float32            `json:"liquidity" bson:"liquidity" validate:"min=0"`
 }
 
 type Diversification struct {

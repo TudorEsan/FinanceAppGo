@@ -3,9 +3,9 @@ package helpers
 import (
 	"App/models"
 	"context"
-	"fmt"
+	"errors"
 	"time"
-
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -18,11 +18,23 @@ func GetUser(userId string) (models.User, error) {
 	if err != nil {
 		return models.User{}, err
 	}
-	fmt.Println("valid id")
 	err = userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
 	if err != nil {
 		return models.User{}, err
 	}
-	fmt.Println(user)
 	return user, nil
+}
+
+func GetUserFromContext(c *gin.Context) (user models.User, err error) {
+	userAny, exists := c.Get("user")
+	if !exists {
+		err = errors.New("key does not exisst in context")
+		return
+	}
+	user, ok := userAny.(models.User)
+	if !ok {
+		err = errors.New("could not convert to user")
+		return
+	}
+	return
 }

@@ -13,8 +13,10 @@ func main() {
 		port = "8080"
 	}
 	router := gin.Default()
+	netWorthRoutes := router.Group("networth")
 	routes.AuthRoutes(router)
 	routes.UserRoutes(router)
+	routes.NetWorthRoutes(netWorthRoutes)
 	router.Run()
 
 }

@@ -29,7 +29,7 @@ func GenerateTokens(user models.User) (string, string, error) {
 		Username: *user.Email,
 		Id:       user.ID.Hex(),
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Minute * 15).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Second * 1).Unix(),
 		},
 	}
 	refreshClaims := &SignedDetails{
@@ -42,7 +42,6 @@ func GenerateTokens(user models.User) (string, string, error) {
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(SECRET_KEY)
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(SECRET_KEY)
 	if err != nil {
-		fmt.Print(err.Error(), "\n\n\n\n\n")
 		return "", "", err
 	}
 	return token, refreshToken, nil
@@ -52,50 +51,51 @@ func ValidateToken(signedToken string) (*SignedDetails, error) {
 	token, err := jwt.ParseWithClaims(signedToken, &SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SECRET_KEY), nil
 	})
-	if err != nil && !strings.Contains(err.Error(), "expired") {
-		fmt.Println("token expired?")
-		return nil, err
+	if err != nil && strings.Contains(err.Error(), "expired") {
+		return nil, errors.New("token expired")
 	}
+	if err != nil {
+		return nil, errors.New("invalid token")
+	}
+
 	claims, ok := token.Claims.(*SignedDetails)
 	if !ok {
-		return nil, errors.New("token not valid")
-	}
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, errors.New("token expired")
+		return nil, errors.New("invalid token")
 	}
 	return claims, nil
 }
 
-func ValidateRefreshToken(refreshToken string) (*models.User, error) {
+func ValidateRefreshToken(refreshToken string) (models.User, error) {
 	token, err := jwt.ParseWithClaims(refreshToken, &SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SECRET_KEY), nil
 	})
 	if err != nil {
-		return nil, err
+		return models.User{}, errors.New("refresh token is not valid")
 	}
 	claims, ok := token.Claims.(*SignedDetails)
 	if !ok {
-		return nil, errors.New("token not valid")
+		return models.User{}, errors.New("token not valid")
 	}
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, errors.New("refresh token expired")
+		return models.User{}, errors.New("refresh token expired")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	var user models.User
 	id, err := primitive.ObjectIDFromHex(claims.Id)
 	if err != nil {
-		return nil, errors.New("not valid object id")
+		return models.User{}, errors.New("not valid object id")
 	}
 	err = userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
 	if err != nil {
-		return nil, err
+		return models.User{}, err
 	}
 	if *user.RefreshToken != refreshToken {
-		return nil, err
+		return models.User{}, err
 	}
+	fmt.Println("HERE USER", user)
 
-	return &user, nil
+	return user, nil
 }
 
 func getSecretKey() []byte {

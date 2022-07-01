@@ -3,7 +3,6 @@ package controller
 // func Signup
 import (
 	"App/database"
-	"App/helpers"
 	helper "App/helpers"
 	"App/models"
 	"context"
@@ -48,19 +47,28 @@ func Signup() gin.HandlerFunc {
 		}
 		user.CreateDate, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.ID = primitive.NewObjectID()
-		hashedPassw, _ := helpers.HashPassword(*user.Password)
+		hashedPassw, _ := helper.HashPassword(*user.Password)
 		*user.Password = hashedPassw
 		jwt, refreshToken, _ := helper.GenerateTokens(user)
-		fmt.Println(jwt, refreshToken)
 		user.RefreshToken = &refreshToken
-		res, err := userCollection.InsertOne(ctx, user)
+		_, err = userCollection.InsertOne(ctx, user)
+
 		if err != nil {
-			fmt.Println("HERRRRRRRRRRREEEEEEEEE")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		c.SetCookie("token", jwt, 60*60*24*30, "/", "/", true, true)
-		c.JSON(http.StatusOK, res)
+		fmt.Println(user.ID.Hex())
+		netWorth, err := helper.InitNetWort(user.ID.Hex())
+		if err != nil {
+			helper.ReturnError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"user":     user,
+			"netWorth": netWorth,
+		})
 	}
 }
 func Login() gin.HandlerFunc {
@@ -93,4 +101,3 @@ func Login() gin.HandlerFunc {
 		c.JSON(http.StatusOK, foundUser)
 	}
 }
-

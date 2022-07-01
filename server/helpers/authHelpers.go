@@ -5,7 +5,6 @@ import (
 	"App/models"
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -80,8 +79,7 @@ func UpdateTokens(c *gin.Context, token string, refreshToken string, userId stri
 		ReturnDocument: &after,
 	}
 	err = userCollection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.D{
-		{"$set", bson.D{{"refreshToken", refreshToken}, {"email", "t@mama.r"}}},
+		{"$set", bson.D{{"refreshToken", refreshToken}}},
 	}, &opts).Decode(&user)
-	fmt.Print(user)
 	return user, err
 }

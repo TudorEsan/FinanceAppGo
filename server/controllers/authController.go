@@ -73,6 +73,7 @@ func Signup() gin.HandlerFunc {
 }
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		start := time.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 		defer cancel()
 		var user models.User
@@ -81,7 +82,9 @@ func Login() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		fmt.Println("Bind JSON :", time.Since(start).Milliseconds())
 		err := userCollection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
+		fmt.Println("Find Username", time.Since(start).Milliseconds())
 		if err != nil {
 			helper.ReturnError(c, http.StatusBadRequest, errors.New("not valid username"))
 			return
@@ -91,9 +94,12 @@ func Login() gin.HandlerFunc {
 			helper.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
+		fmt.Println("Check Password ", time.Since(start).Milliseconds())
 		jwt, refreshToken, _ := helper.GenerateTokens(foundUser)
+		fmt.Println("Generate Tokens", time.Since(start).Milliseconds())
 		fmt.Println(jwt, "       ", refreshToken)
 		foundUser, err = helper.UpdateTokens(c, jwt, refreshToken, foundUser.ID.Hex())
+		fmt.Println("Generate Tokens ", time.Since(start).Milliseconds())
 		if err != nil {
 			helper.ReturnError(c, http.StatusBadRequest, err)
 			return

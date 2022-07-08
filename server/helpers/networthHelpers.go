@@ -36,10 +36,7 @@ func InitNetWort(userID string) (netWorth models.NetWorth, err error) {
 }
 
 func AddRecord(userId primitive.ObjectID, record models.Record) (netWorth models.NetWorth, err error) {
-	err = validate.Struct(record)
-	if err != nil {
-		return
-	}
+	record.GenerateStatistics()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	after := options.After
@@ -52,4 +49,28 @@ func AddRecord(userId primitive.ObjectID, record models.Record) (netWorth models
 		},
 	}, &opts).Decode(&netWorth)
 	return
+}
+
+func GetNetWorth(userId primitive.ObjectID) (netWorth models.NetWorth, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	err = NetWorthCollection.FindOne(ctx, bson.M{"userId": userId}).Decode(&netWorth)
+	return
+}
+
+func DeleteRecord(userId, recordId primitive.ObjectID) (netWorth models.NetWorth, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	NetWorthCollection.FindOneAndUpdate(ctx, bson.M{"userId": userId},
+		bson.M{"$pull": bson.M{
+			"records": bson.M{"id": recordId},
+		}}, &ReturnNewObject).Decode(&netWorth)
+	return
+
+}
+
+func GetNetWorthStatistics() {}
+
+func GetRecordStatistics(record models.Record) {
+
 }

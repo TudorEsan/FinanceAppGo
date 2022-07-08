@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"App/helpers"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,15 +35,11 @@ func VerifyAuth() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-			fmt.Println("token was expired, but refreshtoken was valid")
-			fmt.Println("IDDDD: ", user.ID.Hex())
 			userId = user.ID.Hex()
-			fmt.Println("trece?")
 
 		} else {
 			userId = claims.Id
 		}
-		fmt.Println("??")
 		user, err := helpers.GetUser(userId)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)

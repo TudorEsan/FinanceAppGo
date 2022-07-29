@@ -4,6 +4,7 @@ import (
 	"App/database"
 	"App/helpers"
 	"App/models"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,7 @@ import (
 type NetWorth models.NetWorth
 
 var NetWorthCollection *mongo.Collection = database.OpenCollection(database.Client, "NetWorth")
+var InfoCollection *mongo.Collection = database.OpenCollection(database.Client, "Info")
 
 func InitNetWort() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -21,25 +23,48 @@ func InitNetWort() gin.HandlerFunc {
 	}
 }
 
+func GetRecord() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		user, err := helpers.GetUserFromContext(c)
+		if err != nil {
+			helpers.ReturnError(c, http.StatusBadRequest, err)
+			return
+		}
+		fmt.Println("ID ", id)
+		record, err := helpers.GetRecord(user.ID, id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"record": record})
+
+	}
+}
+
 func AddRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var record models.Record
-		if err := c.BindJSON(&record); err != nil {
+		var recordBody models.RecordBody
+		if err := c.BindJSON(&recordBody); err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		if err := validate.Struct(record); err != nil {
+		if err := validate.Struct(recordBody); err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
+		record, info := recordBody.Split()
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusInternalServerError, err)
 			return
 		}
-		record.Id = primitive.NewObjectID()
 		newNetWorth, err := helpers.AddRecord(user.ID, record)
 		if err != nil {
+			helpers.ReturnError(c, http.StatusInternalServerError, err)
+			return
+		}
+		if err := helpers.AddInfo(user.ID, info); err != nil {
 			helpers.ReturnError(c, http.StatusInternalServerError, err)
 			return
 		}
@@ -90,11 +115,11 @@ func DeleteRecord() gin.HandlerFunc {
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 		}
-		netWorth, err := helpers.DeleteRecord(user.ID, id)
+		err = helpers.DeleteRecord(user.ID, id)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 		}
-		c.JSON(http.StatusOK, gin.H{"netWorth": netWorth})
+		c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 	}
 
 }

@@ -65,8 +65,8 @@ func CheckPassword(dbUser models.User, user models.User) (err error) {
 }
 
 func UpdateTokens(c *gin.Context, token string, refreshToken string, userId string) (models.User, error) {
-	c.SetCookie("token", token, 60*60, "", "", false, true)
-	c.SetCookie("refreshToken", refreshToken, 60*60, "", "", false, true)
+	c.SetCookie("token", token, 60*60, "", "", false, false)
+	c.SetCookie("refreshToken", refreshToken, 60*60*24*30, "", "", false, false)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	var user models.User
@@ -83,3 +83,5 @@ func UpdateTokens(c *gin.Context, token string, refreshToken string, userId stri
 	}, &opts).Decode(&user)
 	return user, err
 }
+
+// calculate fibonaci sequence

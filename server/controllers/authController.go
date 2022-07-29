@@ -32,17 +32,17 @@ func Signup() gin.HandlerFunc {
 		defer cancel()
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": validationErr.Error()})
 			return
 		}
 		err := helper.ValidUsername(*user.Username)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		user.CreateDate, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
@@ -54,37 +54,35 @@ func Signup() gin.HandlerFunc {
 		_, err = userCollection.InsertOne(ctx, user)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
 		}
-		c.SetCookie("token", jwt, 60*60*24*30, "/", "/", true, true)
+		c.SetCookie("token", jwt, 60*60, "/", "/", false, false)
+		c.SetCookie("token", jwt, 60*60*24*30, "/", "/", false, false)
 		fmt.Println(user.ID.Hex())
-		netWorth, err := helper.InitNetWort(user.ID.Hex())
+		_, err = helper.InitNetWort(user.ID.Hex())
 		if err != nil {
 			helper.ReturnError(c, http.StatusInternalServerError, err)
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"user":     user,
-			"netWorth": netWorth,
+			"user": user,
 		})
 	}
 }
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		start := time.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 		defer cancel()
 		var user models.User
 		var foundUser models.User
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		fmt.Println("Bind JSON :", time.Since(start).Milliseconds())
+		fmt.Println("USER: ", user.Username)
 		err := userCollection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
-		fmt.Println("Find Username", time.Since(start).Milliseconds())
 		if err != nil {
 			helper.ReturnError(c, http.StatusBadRequest, errors.New("not valid username"))
 			return
@@ -94,12 +92,10 @@ func Login() gin.HandlerFunc {
 			helper.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		fmt.Println("Check Password ", time.Since(start).Milliseconds())
 		jwt, refreshToken, _ := helper.GenerateTokens(foundUser)
-		fmt.Println("Generate Tokens", time.Since(start).Milliseconds())
 		fmt.Println(jwt, "       ", refreshToken)
 		foundUser, err = helper.UpdateTokens(c, jwt, refreshToken, foundUser.ID.Hex())
-		fmt.Println("Generate Tokens ", time.Since(start).Milliseconds())
+		foundUser.Password = nil
 		if err != nil {
 			helper.ReturnError(c, http.StatusBadRequest, err)
 			return

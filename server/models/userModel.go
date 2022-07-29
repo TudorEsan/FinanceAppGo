@@ -7,11 +7,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+
+
+type UserLoginForm struct {
+	Username string `json:"username" validate:"required,min=3,max=20"`
+	Password string `json:"password" validate:"required,min=8,max=20"`
+}
 type User struct {
 	ID           primitive.ObjectID `bson:"_id" json:"_id"`
 	Username     *string            `json:"username" bson:"username" validate:"required,min=4,max=20"`
 	Email        *string            `json:"email" bson:"email" validate:"required,email"`
-	Password     *string            `json:"password" bson:"password" validate:"required,min=8,max=50"`
+	Password     *string            `json:"password,omitempty" bson:"password" validate:"required,min=8,max=50"`
 	RefreshToken *string            `json:"refreshToken" bson:"refreshToken"`
 	CreateDate   time.Time          `json:"createDate" bson:"createDate"`
 }

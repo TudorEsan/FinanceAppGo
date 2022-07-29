@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UserRoutes(incomingRoutes *gin.Engine) {
+func UserRoutes(incomingRoutes *gin.RouterGroup) {
 	// incomingRoutes.Use(middleware.VerifyAuth())
 	incomingRoutes.GET("api/secret", controller.TestMiddlewareController())
 }

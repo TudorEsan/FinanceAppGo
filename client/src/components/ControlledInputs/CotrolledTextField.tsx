@@ -36,10 +36,6 @@ export function ControlledTextField({
               fullWidth
               type={type}
               variant="outlined"
-              InputLabelProps={{
-                style: { color: "black" },
-              }}
-              autoComplete="off"
               label={label}
               value={value || ""}
               onChange={onChange}

@@ -44,7 +44,7 @@ func GetRecord() gin.HandlerFunc {
 
 func AddRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var recordBody models.RecordBody
+		var recordBody models.Record
 		if err := c.BindJSON(&recordBody); err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
@@ -53,18 +53,13 @@ func AddRecord() gin.HandlerFunc {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		record, info := recordBody.Split()
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusInternalServerError, err)
 			return
 		}
-		newNetWorth, err := helpers.AddRecord(user.ID, record)
+		newNetWorth, err := helpers.AddRecord(user.ID, recordBody)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusInternalServerError, err)
-			return
-		}
-		if err := helpers.AddInfo(user.ID, info); err != nil {
 			helpers.ReturnError(c, http.StatusInternalServerError, err)
 			return
 		}

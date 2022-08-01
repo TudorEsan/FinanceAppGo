@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,7 +29,7 @@ func GenerateTokens(user models.User) (string, string, error) {
 		Username: *user.Email,
 		Id:       user.ID.Hex(),
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Second * 1).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Minute * 60 * 24 * 30).Unix(),
 		},
 	}
 	refreshClaims := &SignedDetails{
@@ -90,12 +90,21 @@ func ValidateRefreshToken(refreshToken string) (models.User, error) {
 	if err != nil {
 		return models.User{}, err
 	}
+	fmt.Println(user)
 	if *user.RefreshToken != refreshToken {
-		return models.User{}, err
+		fmt.Println("Desired: ", *user.RefreshToken)
+		fmt.Println("Actual: ", refreshToken)
+		return models.User{}, errors.New("authorization failed")
 	}
-	fmt.Println("HERE USER", user)
+	fmt.Println("USER", user)
 
 	return user, nil
+}
+
+func RemoveCookies(c *gin.Context) {
+	fmt.Println("RemoveCookies")
+	c.SetCookie("token", "", 60*60*24*30, "", "", false, false)
+	c.SetCookie("refreshToken", "", 60*60*24*30, "", "", false, false)
 }
 
 func getSecretKey() []byte {

@@ -84,21 +84,21 @@ type RecordBody struct {
 
 func (stocks Stocks) GetValue() (sum float32) {
 	for _, stock := range stocks {
-		sum += *stock.ValuedAt * stock.Shares
+		sum += *stock.ValuedAt
 	}
 	return
 }
 func (cryptos Cryptos) GetValue() (sum float32) {
 	for _, crypto := range cryptos {
-		sum += *crypto.ValuedAt * crypto.Coins
+		sum += *crypto.ValuedAt
 	}
 	return
 }
 func (stock Stock) GetValue() (sum float32) {
-	return *stock.ValuedAt * stock.Shares
+	return *stock.ValuedAt
 }
 func (crypto Crypto) GetValue() (sum float32) {
-	return *crypto.ValuedAt * crypto.Coins
+	return *crypto.ValuedAt
 }
 
 func (record Record) GetStockDiversification(stocksValue float32) (diversification []Diversification) {

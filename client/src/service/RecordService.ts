@@ -12,5 +12,5 @@ export const getRecordsReq = async (): Promise<IRecord[]> => {
 
 export const getRecordReq = async (id: string): Promise<IRecord> => {
   const resp = await axios.get(`/api/networth/record/${id}`);
-  return resp.data.netWorth.record as IRecord;
+  return resp.data.record as IRecord;
 };

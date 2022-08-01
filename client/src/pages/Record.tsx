@@ -36,6 +36,7 @@ const stocksCol: GridColDef[] = [
     editable: false,
   },
 ];
+// test
 
 const StocksGrid = ({ stocks }: IStockGridProps) => {
   return (

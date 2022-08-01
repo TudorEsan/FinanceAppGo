@@ -6,7 +6,7 @@ import { IRecord } from "../types/record";
 
 export const useRecord = () => {
   const [record, setRecord] = React.useState<IRecord | null>(null);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const { recordId: id } = useParams();
 
@@ -15,8 +15,11 @@ export const useRecord = () => {
     setError(null);
     try {
       const record = await getRecordReq(id!);
+      console.log(record);
+      console.log(typeof record.date)
       setRecord(record);
     } catch (e) {
+      console.error(e);
       setError(getErrorMessage(e));
     }
     setLoading(false);
@@ -25,4 +28,6 @@ export const useRecord = () => {
   React.useEffect(() => {
     getRecord();
   }, [id]);
+
+  return { record, loading, error };
 };

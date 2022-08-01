@@ -99,5 +99,6 @@ func GetRecord(userId primitive.ObjectID, recordId string) (record models.Record
 		err = errors.New("record not found")
 		return
 	}
+	record.GenerateStatistics()
 	return
 }

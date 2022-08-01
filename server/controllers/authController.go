@@ -57,8 +57,8 @@ func Signup() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
 		}
-		c.SetCookie("token", jwt, 60*60, "/", "/", false, false)
-		c.SetCookie("token", jwt, 60*60*24*30, "/", "/", false, false)
+		c.SetCookie("token", jwt, 60*60*24*30, "", "", false, false)
+		c.SetCookie("refreshToken", jwt, 60*60*24*30, "", "", false, false)
 		fmt.Println(user.ID.Hex())
 		_, err = helper.InitNetWort(user.ID.Hex())
 		if err != nil {
@@ -92,14 +92,18 @@ func Login() gin.HandlerFunc {
 			helper.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		jwt, refreshToken, _ := helper.GenerateTokens(foundUser)
-		fmt.Println(jwt, "       ", refreshToken)
+		jwt, refreshToken, err := helper.GenerateTokens(foundUser)
+		if err != nil {
+			helper.ReturnError(c, http.StatusInternalServerError, err)
+			return
+		}
+		fmt.Println("\n\n", jwt, "\n\n", refreshToken, "\n\n")
 		foundUser, err = helper.UpdateTokens(c, jwt, refreshToken, foundUser.ID.Hex())
-		foundUser.Password = nil
 		if err != nil {
 			helper.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
+		foundUser.Password = nil
 		c.JSON(http.StatusOK, foundUser)
 	}
 }

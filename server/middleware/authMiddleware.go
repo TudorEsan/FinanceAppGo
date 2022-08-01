@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"App/helpers"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,35 +14,44 @@ func VerifyAuth() gin.HandlerFunc {
 		token, err := c.Cookie("token")
 		if err != nil {
 			helpers.ReturnError(c, http.StatusUnauthorized, err)
+			helpers.RemoveCookies(c)
 			c.Abort()
 			return
 		}
 		claims, err := helpers.ValidateToken(token)
 		if err != nil && err.Error() != "token expired" {
 			helpers.ReturnError(c, http.StatusUnauthorized, err)
+			helpers.RemoveCookies(c)
 			c.Abort()
 			return
 		}
 		if err != nil && err.Error() == "token expired" {
+			fmt.Println("Token expired")
 			refreshToken, err := c.Cookie("refreshToken")
 			if err != nil {
 				helpers.ReturnError(c, http.StatusUnauthorized, err)
+				helpers.RemoveCookies(c)
 				c.Abort()
 				return
 			}
 			user, err := helpers.ValidateRefreshToken(refreshToken)
 			if err != nil {
 				helpers.ReturnError(c, http.StatusUnauthorized, err)
+				helpers.RemoveCookies(c)
 				c.Abort()
 				return
 			}
+			fmt.Println("User Refresh Token", user.ID.Hex())
 			userId = user.ID.Hex()
 
 		} else {
+			fmt.Println("claims", claims)
 			userId = claims.Id
 		}
+		fmt.Println("User ID ", userId)
 		user, err := helpers.GetUser(userId)
 		if err != nil {
+			fmt.Println("error with user", err)
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			c.Abort()
 			return
@@ -52,6 +62,7 @@ func VerifyAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		fmt.Println("Got it")
 		user, err = helpers.UpdateTokens(c, newToken, newRefreshToken, user.ID.Hex())
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)

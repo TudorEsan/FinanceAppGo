@@ -31,9 +31,16 @@ type Info struct {
 }
 
 type Record struct {
-	Id     primitive.ObjectID `json:"id" bson:"id"`
-	Date   time.Time          `json:"date" bson:"date" binding:"required"`
-	InfoId primitive.ObjectID `json:"infoId" bson:"infoId" binding:"required"`
+	Id                    primitive.ObjectID `json:"id,omitempty" bson:"id"`
+	Date                  time.Time          `json:"date" bson:"date" binding:"required"`
+	InvestedAmount        *float32           `json:"investedAmount,omitempty" bson:"investedAmount"`
+	Stocks                Stocks             `json:"stocks" bson:"stocks" binding:"required,dive"`
+	Cryptos               Cryptos            `json:"cryptos" bson:"cryptos" binding:"required"`
+	StockDiversification  *[]Diversification `json:"stockDiversification,omitempty" `
+	CryptoDiversification *[]Diversification `json:"cryptoDiversification,omitempty"`
+	CryptosValue          *float32           `json:"cryptosValue,omitempty" bson:"cryptosValue"`
+	StocksValue           *float32           `json:"stocksValue,omitempty" bson:"stocksValue"`
+	Liquidity             *float32           `json:"liquidity" bson:"liquidity" binding:"required,min=0"`
 }
 
 type Diversification struct {
@@ -94,65 +101,71 @@ func (crypto Crypto) GetValue() (sum float32) {
 	return *crypto.ValuedAt * crypto.Coins
 }
 
-func (info Info) GetStockDiversification(stocksValue float32) (diversification []Diversification) {
-	diversification = make([]Diversification, 0, len(info.Stocks))
-	for _, stock := range info.Stocks {
+func (record Record) GetStockDiversification(stocksValue float32) (diversification []Diversification) {
+	diversification = make([]Diversification, 0, len(record.Stocks))
+	for _, stock := range record.Stocks {
 		div := Diversification{stock.Symbol, stock.GetValue() / stocksValue}
 		diversification = append(diversification, div)
 	}
 	return
 }
 
-func (info Info) GetCryptoDiversification(cryptosValue float32) (diversification []Diversification) {
-	diversification = make([]Diversification, 0, len(info.Cryptos))
-	for _, crypto := range info.Cryptos {
+func (record Record) GetCryptoDiversification(cryptosValue float32) (diversification []Diversification) {
+	diversification = make([]Diversification, 0, len(record.Cryptos))
+	for _, crypto := range record.Cryptos {
 		div := Diversification{crypto.Symbol, crypto.GetValue() / cryptosValue}
 		diversification = append(diversification, div)
 	}
 	return
 }
 
-func (info *Info) GenerateStatistics() {
+func (record *Record) GenerateStatistics() {
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
-		info.StocksValue = info.Stocks.GetValue()
-		info.StockDiversification = info.GetStockDiversification(info.StocksValue)
+		value := record.Stocks.GetValue()
+		record.StocksValue = &value
+		diversification := record.GetStockDiversification(*record.StocksValue)
+		record.StockDiversification = &diversification
 		wg.Done()
 	}()
 	go func() {
-		info.CryptosValue = info.Cryptos.GetValue()
-		info.CryptoDiversification = info.GetCryptoDiversification(info.CryptosValue)
+		value := record.Cryptos.GetValue()
+		record.CryptosValue = &value
+		diversification := record.GetCryptoDiversification(*record.CryptosValue)
+		record.CryptoDiversification = &diversification
 		wg.Done()
 	}()
 	wg.Wait()
+	investedAmount := *record.CryptosValue + *record.StocksValue
+	record.InvestedAmount = &investedAmount
 }
 
-func (recordBody RecordBody) Split() (record Record, info Info) {
-	info.Id = primitive.NewObjectID()
-	record.Date = recordBody.Date
-	record.Id = primitive.NewObjectID()
-	record.InfoId = info.Id
-	info.InvestedAmount = recordBody.InvestedAmount
-	info.Stocks = recordBody.Stocks
-	info.Cryptos = recordBody.Cryptos
-	info.GenerateStatistics()
-	info.Liquidity = recordBody.Liquidity
-	return
-}
+// func (recordBody RecordBody) Split() (record Record, info Info) {
+// 	info.Id = primitive.NewObjectID()
+// 	record.Date = recordBody.Date
+// 	record.Id = primitive.NewObjectID()
+// 	record.InfoId = info.Id
+// 	info.InvestedAmount = recordBody.InvestedAmount
+// 	info.Stocks = recordBody.Stocks
+// 	info.Cryptos = recordBody.Cryptos
+// 	info.GenerateStatistics()
+// 	info.Liquidity = recordBody.Liquidity
+// 	return
+// }
 
-func ConcatRecord(record Record, info Info) RecordBody {
-	recordBody := RecordBody{
-		Id:                    record.Id.Hex(),
-		Date:                  record.Date,
-		InvestedAmount:        info.InvestedAmount,
-		Stocks:                info.Stocks,
-		Cryptos:               info.Cryptos,
-		StockDiversification:  info.StockDiversification,
-		CryptoDiversification: info.CryptoDiversification,
-		CryptosValue:          info.CryptosValue,
-		StocksValue:           info.StocksValue,
-		Liquidity:             info.Liquidity,
-	}
-	return recordBody
-}
+// func ConcatRecord(record Record, info Info) RecordBody {
+// 	recordBody := RecordBody{
+// 		Id:                    record.Id.Hex(),
+// 		Date:                  record.Date,
+// 		InvestedAmount:        info.InvestedAmount,
+// 		Stocks:                info.Stocks,
+// 		Cryptos:               info.Cryptos,
+// 		StockDiversification:  info.StockDiversification,
+// 		CryptoDiversification: info.CryptoDiversification,
+// 		CryptosValue:          info.CryptosValue,
+// 		StocksValue:           info.StocksValue,
+// 		Liquidity:             info.Liquidity,
+// 	}
+// 	return recordBody
+// }

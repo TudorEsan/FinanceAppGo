@@ -43,7 +43,6 @@ export const Register = () => {
   } = useForm<RegisterInput>(formConfig);
 
   const handleRegister = (data: RegisterInput) => {
-    console.log("wtf");
     register(data);
   };
 

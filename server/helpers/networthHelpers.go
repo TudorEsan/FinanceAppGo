@@ -15,7 +15,6 @@ import (
 )
 
 var NetWorthCollection *mongo.Collection = database.OpenCollection(database.Client, "NetWorth")
-var InfoCollection *mongo.Collection = database.OpenCollection(database.Client, "Info")
 var validate = validator.New()
 
 func InitNetWort(userID string) (netWorth models.NetWorth, err error) {
@@ -43,18 +42,16 @@ func AddRecord(userId primitive.ObjectID, record models.Record) (netWorth models
 	opts := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
 	}
+
+	// add id to the record
+	record.Id = primitive.NewObjectID()
+	record.GenerateStatistics()
+
 	err = NetWorthCollection.FindOneAndUpdate(ctx, bson.M{"userId": userId}, bson.M{
 		"$push": bson.M{
 			"records": record,
 		},
 	}, &opts).Decode(&netWorth)
-	return
-}
-
-func AddInfo(userId primitive.ObjectID, info models.Info) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	_, err = InfoCollection.InsertOne(ctx, info)
 	return
 }
 
@@ -68,11 +65,9 @@ func GetNetWorth(userId primitive.ObjectID) (netWorth models.NetWorth, err error
 func DeleteRecord(userId, recordId primitive.ObjectID) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	record, err := GetRecord(userId, recordId.Hex())
 	if err != nil {
 		return
 	}
-	InfoCollection.DeleteOne(ctx, bson.M{"_id": record.InfoId})
 	NetWorthCollection.FindOneAndUpdate(ctx, bson.M{"userId": userId},
 		bson.M{"$pull": bson.M{
 			"records": bson.M{"id": recordId},
@@ -104,21 +99,5 @@ func GetRecord(userId primitive.ObjectID, recordId string) (record models.Record
 		err = errors.New("record not found")
 		return
 	}
-	return
-}
-
-func GetRecordWithInfo(userId primitive.ObjectID, recordId string) (recordWithInfo models.RecordBody, err error) {
-	var info models.Info
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	record, err := GetRecord(userId, recordId)
-	if err != nil {
-		return
-	}
-	err = InfoCollection.FindOne(ctx, bson.M{"_id": record.InfoId}).Decode(&info)
-	if err != nil {
-		return
-	}
-	recordWithInfo = models.ConcatRecord(record, info)
 	return
 }

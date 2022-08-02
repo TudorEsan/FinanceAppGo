@@ -15,8 +15,6 @@ export const useRecord = () => {
     setError(null);
     try {
       const record = await getRecordReq(id!);
-      console.log(record);
-      console.log(typeof record.date)
       setRecord(record);
     } catch (e) {
       console.error(e);

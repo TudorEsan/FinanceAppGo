@@ -24,6 +24,7 @@ import { ControlledTextField } from "./ControlledInputs/CotrolledTextField";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAddRecord } from "../hooks/useAddRecord";
+import { useBlock } from "../hooks/useBlock";
 
 const formSchema = Yup.object({
   date: Yup.string().required("Date is required"),
@@ -192,10 +193,11 @@ const Cryptos = ({ control, fields, remove }: IRecordCryptosProps) => {
 
 export const RecordCard = () => {
   const { error, loading, addRecord } = useAddRecord();
+
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<IRecordForm>({
     defaultValues: {
       date: new Date(),
@@ -204,7 +206,8 @@ export const RecordCard = () => {
     },
     resolver: yupResolver(formSchema),
   });
-  console.log(errors);
+  useBlock(isDirty);
+
   const {
     fields: stockFields,
     append: stockAppend,

@@ -2,6 +2,7 @@ import axios from "axios";
 import { IRecord, IRecordForm } from "../types/record";
 
 export const addRecordReq = async (record: IRecordForm) => {
+  console.log(record.date)
   return axios.post("/api/networth/record", record);
 };
 

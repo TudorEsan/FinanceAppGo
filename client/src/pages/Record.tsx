@@ -1,7 +1,20 @@
-import { CircularProgress, Typography } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  Typography,
+} from "@mui/material";
 import { Box } from "@mui/system";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import React from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { formatDate } from "../helpers/date";
 import { useRecord } from "../hooks/useRecord";
 import { ICrypto, IStock } from "../types/record";
@@ -104,37 +117,122 @@ const CryptoGrid = ({ cryptos }: ICryptoGridProps) => {
   );
 };
 
+const ConfirmationDialog = ({
+  open,
+  handleClose,
+  handleConfirm,
+}: {
+  open: boolean;
+  handleClose: () => void;
+  handleConfirm: () => void;
+}) => {
+  return (
+    <div>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Warning</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this record?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleConfirm} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
+
 export const Record = () => {
-  const { record, loading, error } = useRecord();
-  if (loading) {
+  const { record, loading, error, deleteRecord } = useRecord();
+  const navigate = useNavigate();
+  const [confirmationOpen, setConfirmationOpen] = React.useState(false);
+
+  const handleClose = () => {
+    setConfirmationOpen(false);
+  };
+
+  const handleConfirm = async () => {
+    await deleteRecord();
+    setConfirmationOpen(false);
+    navigate(-1);
+  };
+
+  const openConfirmation = () => {
+    setConfirmationOpen(true);
+  };
+
+  if (record.loading) {
     return <CircularProgress />;
   }
 
-  if (error !== null) {
-    return <Typography variant="h6">{error}</Typography>;
+  if (record.error !== null) {
+    return (
+      <Typography variant="h6" color="error">
+        {record.error}
+      </Typography>
+    );
   }
-
-  console.log(record, error, loading);
 
   return (
     <>
-      <Typography variant="h4">Record</Typography>
-      <Typography variant="h6">From: {formatDate(record!.date)} $</Typography>
-      <Typography variant="h6" mb={2} gutterBottom>
-        Total: {record!.investedAmount + record!.liquidity} $
-      </Typography>
-      <Typography gutterBottom>Liquidity: {record!.liquidity} $</Typography>
-      <Typography gutterBottom>
-        Invested Amount: {record!.investedAmount} $
-      </Typography>
-      <Typography gutterBottom>
-        Crypto Value: {record!.cryptosValue} $
-      </Typography>
-      <Typography gutterBottom>
-        Stocks Value: {record!.stocksValue} $
-      </Typography>
-      <CryptoGrid cryptos={record!.cryptos} />
-      <StocksGrid stocks={record!.stocks} />
+      <ConfirmationDialog
+        open={confirmationOpen}
+        handleClose={handleClose}
+        handleConfirm={handleConfirm}
+      />
+      <Card elevation={10}>
+        <CardContent>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h4">Record</Typography>
+            <Box>
+              <Button sx={{ mr: 2 }} variant="contained" color="primary">
+                Edit
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => openConfirmation()}
+                color="primary"
+              >
+                Delete
+              </Button>
+            </Box>
+          </Box>
+          <Divider sx={{ mt: 1, mb: 1 }} />
+          <Typography variant="h6">
+            From: {formatDate(record!.data!.date)} $
+          </Typography>
+          <Typography variant="h6" mb={2} gutterBottom>
+            Total: {record!.data!.investedAmount + record!.data!.liquidity} $
+          </Typography>
+          <Typography gutterBottom>
+            Liquidity: {record!.data!.liquidity} $
+          </Typography>
+          <Typography gutterBottom>
+            Invested Amount: {record!.data!.investedAmount} $
+          </Typography>
+          <Typography gutterBottom>
+            Crypto Value: {record!.data!.cryptosValue} $
+          </Typography>
+          <Typography gutterBottom>
+            Stocks Value: {record!.data!.stocksValue} $
+          </Typography>
+        </CardContent>
+      </Card>
+      <CryptoGrid cryptos={record!.data!.cryptos} />
+      <StocksGrid stocks={record!.data!.stocks} />
     </>
   );
 };

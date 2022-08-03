@@ -4,12 +4,21 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+func isInReleaseMode() bool {
+	dbArg := ""
+	if len(os.Args) != 1 {
+		dbArg = os.Args[1]
+	}
+	return dbArg == "--release"
+}
 
 func DbInstace() *mongo.Client {
 	fmt.Println("Connecting to database")
@@ -18,7 +27,13 @@ func DbInstace() *mongo.Client {
 	if err != nil {
 		log.Fatal("no .env")
 	}
-	mongoUrl := envs["MONGO_URL"]
+	var mongoUrl string
+	if isInReleaseMode() {
+		fmt.Println("In Release Mode")
+		mongoUrl = envs["MONGO_REALEASE_URL"]
+	} else {
+		mongoUrl = envs["MONGO_URL"]
+	}
 	if mongoUrl == "" {
 		panic("Credentials not found")
 	}
@@ -42,6 +57,3 @@ func OpenCollection(client *mongo.Client, collenctionName string) *mongo.Collect
 	collection := client.Database("Cluster0").Collection(collenctionName)
 	return collection
 }
-
-
-

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthProvider";
-import { isLoggedIn } from "../helpers/authHelper";
+import { deleteAllCookies, isLoggedIn } from "../helpers/authHelper";
 import { getErrorMessage } from "../helpers/errors";
 import { signIn, signUp } from "../service/AuthService";
 
@@ -35,5 +35,11 @@ export const useAuth = () => {
     setIsLoading(false);
   };
 
-  return { isAuthenticated, login, isLoading, error, register };
+  const logout = () => {
+    setIsAuthenticated(false);
+    navigate("/login");
+    deleteAllCookies();
+  };
+
+  return { logout, isAuthenticated, login, isLoading, error, register };
 };

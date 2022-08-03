@@ -15,6 +15,7 @@ import { Box } from "@mui/system";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import React from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { MyCard } from "../components/Cards/MyCard";
 import { formatDate } from "../helpers/date";
 import { useRecord } from "../hooks/useRecord";
 import { ICrypto, IStock } from "../types/record";
@@ -189,48 +190,42 @@ export const Record = () => {
         handleClose={handleClose}
         handleConfirm={handleConfirm}
       />
-      <Card elevation={10}>
-        <CardContent>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Typography variant="h4">Record</Typography>
-            <Box>
-              <Button sx={{ mr: 2 }} variant="contained" color="primary">
-                Edit
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => openConfirmation()}
-                color="primary"
-              >
-                Delete
-              </Button>
-            </Box>
+      <MyCard>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h4">Record</Typography>
+          <Box>
+            <Button sx={{ mr: 2 }} variant="contained" color="primary">
+              Edit
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => openConfirmation()}
+              color="primary"
+            >
+              Delete
+            </Button>
           </Box>
-          <Divider sx={{ mt: 1, mb: 1 }} />
-          <Typography variant="h6">
-            From: {formatDate(record!.data!.date)} $
-          </Typography>
-          <Typography variant="h6" mb={2} gutterBottom>
-            Total: {record!.data!.investedAmount + record!.data!.liquidity} $
-          </Typography>
-          <Typography gutterBottom>
-            Liquidity: {record!.data!.liquidity} $
-          </Typography>
-          <Typography gutterBottom>
-            Invested Amount: {record!.data!.investedAmount} $
-          </Typography>
-          <Typography gutterBottom>
-            Crypto Value: {record!.data!.cryptosValue} $
-          </Typography>
-          <Typography gutterBottom>
-            Stocks Value: {record!.data!.stocksValue} $
-          </Typography>
-        </CardContent>
-      </Card>
+        </Box>
+        <Divider sx={{ mt: 1, mb: 1 }} />
+        <Typography variant="h6">
+          From: {formatDate(record!.data!.date)} $
+        </Typography>
+        <Typography variant="h6" mb={2} gutterBottom>
+          Total: {record!.data!.investedAmount + record!.data!.liquidity} $
+        </Typography>
+        <Typography gutterBottom>
+          Liquidity: {record!.data!.liquidity} $
+        </Typography>
+        <Typography gutterBottom>
+          Invested Amount: {record!.data!.investedAmount} $
+        </Typography>
+        <Typography gutterBottom>
+          Crypto Value: {record!.data!.cryptosValue} $
+        </Typography>
+        <Typography gutterBottom>
+          Stocks Value: {record!.data!.stocksValue} $
+        </Typography>
+      </MyCard>
       <CryptoGrid cryptos={record!.data!.cryptos} />
       <StocksGrid stocks={record!.data!.stocks} />
     </>

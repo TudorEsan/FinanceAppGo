@@ -18,6 +18,8 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { CalendarMonth, Dashboard } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { Button } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -33,7 +35,7 @@ interface Props {
 export default function ResponsiveDrawer(props: Props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -50,7 +52,7 @@ export default function ResponsiveDrawer(props: Props) {
       <Divider />
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate('/')}>
+          <ListItemButton onClick={() => navigate("/")}>
             <ListItemIcon sx={{ ml: 2 }}>
               <Dashboard />
             </ListItemIcon>
@@ -58,7 +60,7 @@ export default function ResponsiveDrawer(props: Props) {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate('/records')}>
+          <ListItemButton onClick={() => navigate("/records")}>
             <ListItemIcon sx={{ ml: 2 }}>
               <CalendarMonth />
             </ListItemIcon>
@@ -83,7 +85,12 @@ export default function ResponsiveDrawer(props: Props) {
           background: "#161616",
         }}
       >
-        <Toolbar>
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -93,6 +100,7 @@ export default function ResponsiveDrawer(props: Props) {
           >
             <MenuIcon />
           </IconButton>
+          <AppBarContents />
         </Toolbar>
       </AppBar>
       <Box
@@ -149,3 +157,21 @@ export default function ResponsiveDrawer(props: Props) {
     </Box>
   );
 }
+
+const AppBarContents = () => {
+  const { logout, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <>
+      <Box sx={{ ml: "auto", display: "flex", justifyContent: "right" }}>
+        <Button variant="outlined" onClick={logout}>
+          Logout
+        </Button>
+      </Box>
+    </>
+  );
+};

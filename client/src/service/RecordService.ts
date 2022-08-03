@@ -15,3 +15,7 @@ export const getRecordReq = async (id: string): Promise<IRecord> => {
   const resp = await axios.get(`/api/networth/record/${id}`);
   return resp.data.record as IRecord;
 };
+
+export const deleteRecordReq = async (id: string) => {
+  return axios.delete(`/api/networth/record/${id}`);
+}

@@ -93,24 +93,18 @@ func DeleteRecord() gin.HandlerFunc {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		var body models.DeleteRecordBody
-		if err = c.BindJSON(&body); err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+
+		id := c.Param("id")
+		if id == "" {
+			helpers.ReturnError(c, http.StatusBadRequest, fmt.Errorf("ID is required"))
 			return
 		}
-		if err := validate.Struct(body); err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
-			return
-		}
-		if err != nil {
-			helpers.ReturnError(c, http.StatusInternalServerError, err)
-			return
-		}
-		id, err := primitive.ObjectIDFromHex(body.Id)
+
+		netWorthId, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 		}
-		err = helpers.DeleteRecord(user.ID, id)
+		err = helpers.DeleteRecord(user.ID, netWorthId)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 		}

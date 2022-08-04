@@ -1,90 +1,81 @@
-import { Typography } from "@mui/material";
-import React, { useCallback, useState } from "react";
-import { PieChart, Pie, Sector } from "recharts";
+import { Box } from "@mui/system";
+import React from "react";
+import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { IDiversification } from "../../types/record";
 
 const data = [
-  { name: "Group A", value: 400 },
-  { name: "Group B", value: 300 },
-  { name: "Group C", value: 300 },
-  { name: "Group D", value: 200 },
+  { name: "network 1", value: 0.01 },
+  { name: "network 3", value: 4 },
 ];
 
-const renderActiveShape = (props: any) => {
-  const RADIAN = Math.PI / 180;
-  const {
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    startAngle,
-    endAngle,
-    fill,
-    payload,
-  } = props;
-  const sin = Math.sin(-RADIAN * midAngle);
-  const cos = Math.cos(-RADIAN * midAngle);
-  const sx = cx + (outerRadius + 10) * cos;
-  const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-  const ey = my;
+const COLORS = [
+  "#fd7f6f",
+  "#7eb0d5",
+  "#b2e061",
+  "#bd7ebe",
+  "#ffb55a",
+  "#ffee65",
+  "#beb9db",
+  "#fdcce5",
+  "#8bd3c7",
+];
 
+interface IProps {
+  data: IDiversification[];
+}
+
+export const MyPie = ({ data }: IProps) => {
+  if (data.length === 0) {
+    return null;
+  }
   return (
-    <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
-        {payload.name}
-        <br />
-        12$
-      </text>
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-      />
-      <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 6}
-        outerRadius={outerRadius + 10}
-        fill={fill}
-      />
-    </g>
+    <ResponsiveContainer minWidth="400px" width={500} height={350}>
+      <PieChart width={500} height={200}>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius={100}
+          fill="#8884d8"
+          dataKey="percent"
+          label={({
+            cx,
+            cy,
+            midAngle,
+            innerRadius,
+            outerRadius,
+            value,
+            index,
+          }) => {
+            console.log("handling label?");
+            const RADIAN = Math.PI / 180;
+            // eslint-disable-next-line
+            const radius = 25 + innerRadius + (outerRadius - innerRadius);
+            // eslint-disable-next-line
+            const x = cx + radius * Math.cos(-midAngle * RADIAN);
+            // eslint-disable-next-line
+            const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+            return (
+              <text
+                x={x}
+                y={y}
+                fill={COLORS[index % COLORS.length]}
+                textAnchor={x > cx ? "start" : "end"}
+                dominantBaseline="central"
+              >
+                {data[index].symbol} {data[index].percent}%
+              </text>
+            );
+          }}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+      </PieChart>
+    </ResponsiveContainer>
+
+    // </Box>
   );
 };
-
-export default function MyPie() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const onPieEnter = useCallback(
-    (_: any, index: any) => {
-      setActiveIndex(index);
-    },
-    [setActiveIndex]
-  );
-
-  return (
-    <PieChart width={400} height={400}>
-      <Pie
-        activeIndex={activeIndex}
-        activeShape={renderActiveShape}
-        data={data}
-        stroke="none"
-        paddingAngle={5}
-        cx={200}
-        cy={200}
-        innerRadius={60}
-        outerRadius={80}
-        fill="#8884d8"
-        dataKey="value"
-        onMouseEnter={onPieEnter}
-      />
-    </PieChart>
-  );
-}

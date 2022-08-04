@@ -16,6 +16,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import React from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { MyCard } from "../components/Cards/MyCard";
+import { MyPie } from "../components/Charts/PieChart";
 import { formatDate } from "../helpers/date";
 import { useRecord } from "../hooks/useRecord";
 import { ICrypto, IStock } from "../types/record";
@@ -182,7 +183,6 @@ export const Record = () => {
       </Typography>
     );
   }
-
   return (
     <>
       <ConfirmationDialog
@@ -191,7 +191,12 @@ export const Record = () => {
         handleConfirm={handleConfirm}
       />
       <MyCard>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Typography variant="h4">Record</Typography>
           <Box>
             <Button sx={{ mr: 2 }} variant="contained" color="primary">
@@ -207,6 +212,15 @@ export const Record = () => {
           </Box>
         </Box>
         <Divider sx={{ mt: 1, mb: 1 }} />
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <MyPie data={record!.data!.cryptoDiversification} />
+          <MyPie data={record!.data!.stockDiversification} />
+        </Box>
         <Typography variant="h6">
           From: {formatDate(record!.data!.date)} $
         </Typography>

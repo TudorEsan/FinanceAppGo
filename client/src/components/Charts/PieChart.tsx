@@ -1,81 +1,56 @@
 import { Box } from "@mui/system";
-import React from "react";
-import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { ResponsivePie } from "@nivo/pie";
+import { BasicTooltip } from "@nivo/tooltip";
 import { IDiversification } from "../../types/record";
-
-const data = [
-  { name: "network 1", value: 0.01 },
-  { name: "network 3", value: 4 },
-];
-
-const COLORS = [
-  "#fd7f6f",
-  "#7eb0d5",
-  "#b2e061",
-  "#bd7ebe",
-  "#ffb55a",
-  "#ffee65",
-  "#beb9db",
-  "#fdcce5",
-  "#8bd3c7",
-];
 
 interface IProps {
   data: IDiversification[];
 }
 
 export const MyPie = ({ data }: IProps) => {
-  if (data.length === 0) {
-    return null;
-  }
+  console.log(data);
   return (
-    <ResponsiveContainer minWidth="400px" width={500} height={350}>
-      <PieChart width={500} height={200}>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          outerRadius={100}
-          fill="#8884d8"
-          dataKey="percent"
-          label={({
-            cx,
-            cy,
-            midAngle,
-            innerRadius,
-            outerRadius,
-            value,
-            index,
-          }) => {
-            console.log("handling label?");
-            const RADIAN = Math.PI / 180;
-            // eslint-disable-next-line
-            const radius = 25 + innerRadius + (outerRadius - innerRadius);
-            // eslint-disable-next-line
-            const x = cx + radius * Math.cos(-midAngle * RADIAN);
-            // eslint-disable-next-line
-            const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    <Box height={300} minWidth={400}>
+      {/* <p>tf is thiz</p> */}
+      <ResponsivePie
+        colors={{ scheme: "dark2" }}
+        value="percent"
+        id="symbol"
+        data={data}
+        margin={{ right: 80, left: 80 }}
+        innerRadius={0.5}
+        padAngle={2}
+        cornerRadius={1}
+        sortByValue
+        arcLabel={(d) => `${d.value}%`}
+        arcLabelsSkipAngle={10}
+        arcLinkLabelsTextColor={{
+          from: "color",
+          modifiers: [["brighter", 0.8]],
+        }}
+        arcLinkLabelsSkipAngle={10}
+        theme={{
+          tooltip: {
+            container: {
+              color: "black",
+            },
+          },
+        }}
+        // ={(d) => `${d}%`}
+        tooltip={(d) => {
+          console.log(d);
+          return (
+            <BasicTooltip
+              id={d.datum.id}
+              color={d.datum.color}
+              value={d.datum.value + "%"}
+              enableChip
+            />
+          );
+        }}
 
-            return (
-              <text
-                x={x}
-                y={y}
-                fill={COLORS[index % COLORS.length]}
-                textAnchor={x > cx ? "start" : "end"}
-                dominantBaseline="central"
-              >
-                {data[index].symbol} {data[index].percent}%
-              </text>
-            );
-          }}
-        >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-      </PieChart>
-    </ResponsiveContainer>
-
-    // </Box>
+        // activeOuterRadiusOffset={8}
+      />
+    </Box>
   );
 };

@@ -5,6 +5,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDate } from "../helpers/date";
+import { useMobile } from "../hooks/useMobile";
 import { useRecords } from "../hooks/useRecords";
 
 const columns: GridColDef[] = [
@@ -70,23 +71,7 @@ const mobileColums = [
 
 const RecordGrid = () => {
   const { records, loading, error } = useRecords();
-  const [isMobile, setIsMobile] = useState(false);
-  const navigate = useNavigate();
-  //choose the screen size
-  const handleResize = () => {
-    if (window.innerWidth < 720) {
-      setIsMobile(true);
-    } else {
-      setIsMobile(false);
-    }
-  };
-
-  useState(() => {
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  });
+  const isMobile = useMobile();
 
   return (
     <>
@@ -112,7 +97,12 @@ export const Records = () => {
   const navigate = useNavigate();
   return (
     <>
-      <Box mb={2} justifyContent="space-between" alignItems="center" display="flex">
+      <Box
+        mb={2}
+        justifyContent="space-between"
+        alignItems="center"
+        display="flex"
+      >
         <Typography variant="h4">Records</Typography>
         <Button
           size="small"

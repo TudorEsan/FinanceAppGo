@@ -33,7 +33,6 @@ const formSchema = Yup.object({
     .min(0, "Liquidity must be greater or equal to 0"),
   stocks: Yup.array().of(
     Yup.object().shape({
-      name: Yup.string().required("Name is required"),
       symbol: Yup.string().required("Symbol is required"),
       valuedAt: Yup.number()
         .required("Field is required")
@@ -45,7 +44,6 @@ const formSchema = Yup.object({
   ),
   cryptos: Yup.array().of(
     Yup.object().shape({
-      name: Yup.string().required("Name is required"),
       symbol: Yup.string().required("Symbol is required"),
       valuedAt: Yup.number()
         .required("Field is required")
@@ -82,15 +80,7 @@ export const Stocks = ({ control, fields, remove }: IRecordStocksProps) => {
             alignItems="center"
           >
             <Grid item container md={11} spacing={2} xs={12}>
-              <Grid item md={6} lg={3} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  control={control}
-                  name={`stocks.${index}.name`}
-                  label="Name"
-                />
-              </Grid>
-              <Grid item md={6} lg={3} xs={12}>
+              <Grid item md={12} lg={4} xs={12}>
                 <ControlledTextField
                   key={field.id}
                   control={control}
@@ -98,7 +88,7 @@ export const Stocks = ({ control, fields, remove }: IRecordStocksProps) => {
                   label="Symbol"
                 />
               </Grid>
-              <Grid item md={6} lg={3} xs={12}>
+              <Grid item md={6} lg={4} xs={12}>
                 <ControlledTextField
                   key={field.id}
                   control={control}
@@ -107,7 +97,7 @@ export const Stocks = ({ control, fields, remove }: IRecordStocksProps) => {
                   label="Shares"
                 />
               </Grid>
-              <Grid item md={6} lg={3} xs={12}>
+              <Grid item md={6} lg={4} xs={12}>
                 <ControlledTextField
                   key={field.id}
                   type="number"
@@ -143,15 +133,7 @@ const Cryptos = ({ control, fields, remove }: IRecordCryptosProps) => {
             alignItems="center"
           >
             <Grid item container md={11} spacing={2} xs={12}>
-              <Grid item md={6} lg={3} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  control={control}
-                  name={`cryptos.${index}.name`}
-                  label="Name"
-                />
-              </Grid>
-              <Grid item md={6} lg={3} xs={12}>
+              <Grid item md={12} lg={4} xs={12}>
                 <ControlledTextField
                   key={field.id}
                   control={control}
@@ -159,7 +141,7 @@ const Cryptos = ({ control, fields, remove }: IRecordCryptosProps) => {
                   label="Symbol"
                 />
               </Grid>
-              <Grid item md={6} lg={3} xs={12}>
+              <Grid item md={6} lg={4} xs={12}>
                 <ControlledTextField
                   key={field.id}
                   control={control}
@@ -168,7 +150,7 @@ const Cryptos = ({ control, fields, remove }: IRecordCryptosProps) => {
                   label="Coins"
                 />
               </Grid>
-              <Grid item md={6} lg={3} xs={12}>
+              <Grid item md={6} lg={4} xs={12}>
                 <ControlledTextField
                   key={field.id}
                   type="number"
@@ -201,8 +183,8 @@ export const RecordCard = () => {
   } = useForm<IRecordForm>({
     defaultValues: {
       date: new Date(),
-      stocks: [{ name: "", shares: 0, valuedAt: 0, symbol: "" }],
-      cryptos: [{ name: "", coins: 0, valuedAt: 0, symbol: "" }],
+      stocks: [{ shares: 0, valuedAt: 0, symbol: "" }],
+      cryptos: [{ coins: 0, valuedAt: 0, symbol: "" }],
     },
     resolver: yupResolver(formSchema),
   });
@@ -226,10 +208,10 @@ export const RecordCard = () => {
   });
 
   const appendStock = () => {
-    stockAppend({ name: "", shares: 0, valuedAt: 0, symbol: "" });
+    stockAppend({ shares: 0, valuedAt: 0, symbol: "" });
   };
   const appendCrypto = () => {
-    cryptoAppend({ name: "", coins: 0, valuedAt: 0, symbol: "" });
+    cryptoAppend({ coins: 0, valuedAt: 0, symbol: "" });
   };
 
   const onSubmit = (data: IRecordForm) => {

@@ -27,12 +27,6 @@ interface IStockGridProps {
 
 const stocksCol: GridColDef[] = [
   {
-    field: "name",
-    headerName: "Name",
-    flex: 1,
-    editable: false,
-  },
-  {
     field: "symbol",
     headerName: "Symbol",
     flex: 1,
@@ -75,12 +69,6 @@ interface ICryptoGridProps {
 }
 
 const cryptoColumns: GridColDef[] = [
-  {
-    field: "name",
-    headerName: "Name",
-    flex: 1,
-    editable: false,
-  },
   {
     field: "symbol",
     headerName: "Symbol",

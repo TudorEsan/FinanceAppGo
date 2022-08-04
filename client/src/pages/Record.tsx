@@ -9,6 +9,13 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
@@ -18,8 +25,9 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { MyCard } from "../components/Cards/MyCard";
 import { MyPie } from "../components/Charts/PieChart";
 import { formatDate } from "../helpers/date";
+import { useMobile } from "../hooks/useMobile";
 import { useRecord } from "../hooks/useRecord";
-import { ICrypto, IStock } from "../types/record";
+import { ICrypto, IRecord, IStock } from "../types/record";
 
 interface IStockGridProps {
   stocks: IStock[];
@@ -141,6 +149,62 @@ const ConfirmationDialog = ({
   );
 };
 
+const DesktopTable = ({ record }: { record: IRecord }) => (
+  <>
+    <TableHead>
+      <TableRow>
+        <TableCell>Liquidity</TableCell>
+        <TableCell>Invested Amount</TableCell>
+        <TableCell>Crypto Value</TableCell>
+        <TableCell>Stocks Value</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+        <TableCell>{record!.liquidity} $</TableCell>
+        <TableCell>{record!.investedAmount} $</TableCell>
+        <TableCell>{record!.cryptosValue} $</TableCell>
+        <TableCell>{record!.stocksValue} $</TableCell>
+      </TableRow>
+    </TableBody>
+  </>
+);
+
+const MobileTable = ({ record }: { record: IRecord }) => (
+  <>
+    <TableBody>
+      <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+        <TableCell>Invested Amount</TableCell>
+        <TableCell>{record!.liquidity} $</TableCell>
+      </TableRow>
+      <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+        <TableCell>Crypto Value</TableCell>
+        <TableCell>{record!.cryptosValue} $</TableCell>
+      </TableRow>
+      <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+        <TableCell>Stocks Value</TableCell>
+        <TableCell>{record!.stocksValue} $</TableCell>
+      </TableRow>
+      <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+        <TableCell>Invested Amount</TableCell>
+        <TableCell>{record!.investedAmount} $</TableCell>
+      </TableRow>
+    </TableBody>
+  </>
+);
+
+const OverviewTable = ({ record }: { record: IRecord }) => {
+  const isMobile = useMobile();
+  return (
+    <TableContainer component={Paper} sx={{ mt: 4 }}>
+      <Table aria-label="simple table">
+        {!isMobile && <DesktopTable record={record} />}
+        {isMobile && <MobileTable record={record} />}
+      </Table>
+    </TableContainer>
+  );
+};
+
 export const Record = () => {
   const { record, loading, error, deleteRecord } = useRecord();
   const navigate = useNavigate();
@@ -200,6 +264,12 @@ export const Record = () => {
           </Box>
         </Box>
         <Divider sx={{ mt: 1, mb: 1 }} />
+        <Typography variant="h6">
+          From: {formatDate(record!.data!.date)} $
+        </Typography>
+        <Typography variant="h6" mb={2} gutterBottom>
+          Total: {record!.data!.investedAmount + record!.data!.liquidity} $
+        </Typography>
         <Box
           display="flex"
           flexWrap="wrap"
@@ -209,24 +279,7 @@ export const Record = () => {
           <MyPie data={record!.data!.cryptoDiversification} />
           <MyPie data={record!.data!.stockDiversification} />
         </Box>
-        <Typography variant="h6">
-          From: {formatDate(record!.data!.date)} $
-        </Typography>
-        <Typography variant="h6" mb={2} gutterBottom>
-          Total: {record!.data!.investedAmount + record!.data!.liquidity} $
-        </Typography>
-        <Typography gutterBottom>
-          Liquidity: {record!.data!.liquidity} $
-        </Typography>
-        <Typography gutterBottom>
-          Invested Amount: {record!.data!.investedAmount} $
-        </Typography>
-        <Typography gutterBottom>
-          Crypto Value: {record!.data!.cryptosValue} $
-        </Typography>
-        <Typography gutterBottom>
-          Stocks Value: {record!.data!.stocksValue} $
-        </Typography>
+        <OverviewTable record={record!.data!} />
       </MyCard>
       <CryptoGrid cryptos={record!.data!.cryptos} />
       <StocksGrid stocks={record!.data!.stocks} />

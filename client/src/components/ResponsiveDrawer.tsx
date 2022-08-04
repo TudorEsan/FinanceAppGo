@@ -148,11 +148,11 @@ export default function ResponsiveDrawer(props: Props) {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { sm: `calc(100% - ${drawerWidth}px)`, xs: "100%" },
         }}
       >
         <Toolbar />
-        {props.children}
+        <Box width="100%">{props.children}</Box>
       </Box>
     </Box>
   );

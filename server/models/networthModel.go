@@ -1,6 +1,7 @@
 package models
 
 import (
+	"math"
 	"sync"
 	"time"
 
@@ -49,14 +50,12 @@ type Diversification struct {
 }
 
 type Stock struct {
-	Name     string   `json:"name" bson:"name" binding:"required"`
 	Symbol   string   `json:"symbol" bson:"symbol" binding:"required"`
 	Shares   float32  `json:"shares" bson:"shares" binding:"required,min=0"`
 	ValuedAt *float32 `json:"valuedAt" bson:"valuedAt" binding:"required,min=0"`
 }
 
 type Crypto struct {
-	Name     string   `json:"name" bson:"name" binding:"required"`
 	Symbol   string   `json:"symbol" bson:"symbol" binding:"required"`
 	Coins    float32  `json:"coins" bson:"coins" binding:"required,min=0"`
 	ValuedAt *float32 `json:"valuedAt" bson:"valuedAt" binding:"required,min=0"`
@@ -101,10 +100,14 @@ func (crypto Crypto) GetValue() (sum float32) {
 	return *crypto.ValuedAt
 }
 
+func roundPercent(f float32) float32 {
+	return float32(math.Round(float64(f*100))) 
+}
+
 func (record Record) GetStockDiversification(stocksValue float32) (diversification []Diversification) {
 	diversification = make([]Diversification, 0, len(record.Stocks))
 	for _, stock := range record.Stocks {
-		div := Diversification{stock.Symbol, stock.GetValue() / stocksValue}
+		div := Diversification{stock.Symbol, roundPercent(stock.GetValue() / stocksValue)}
 		diversification = append(diversification, div)
 	}
 	return
@@ -113,7 +116,7 @@ func (record Record) GetStockDiversification(stocksValue float32) (diversificati
 func (record Record) GetCryptoDiversification(cryptosValue float32) (diversification []Diversification) {
 	diversification = make([]Diversification, 0, len(record.Cryptos))
 	for _, crypto := range record.Cryptos {
-		div := Diversification{crypto.Symbol, crypto.GetValue() / cryptosValue}
+		div := Diversification{crypto.Symbol, roundPercent(crypto.GetValue() / cryptosValue)}
 		diversification = append(diversification, div)
 	}
 	return

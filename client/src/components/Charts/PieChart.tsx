@@ -17,7 +17,7 @@ export const MyPie = ({ data }: IProps) => {
         value="percent"
         id="symbol"
         data={data}
-        margin={{ right: 80, left: 80 }}
+        margin={{ right: 90, left: 90 }}
         innerRadius={0.5}
         padAngle={2}
         cornerRadius={1}

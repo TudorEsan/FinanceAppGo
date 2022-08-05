@@ -1,10 +1,15 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { getErrorMessage } from "../helpers/errors";
+import { getDiversification } from "../helpers/recordHelper";
 import { handleError, handleSuccess } from "../helpers/state";
-import { deleteRecordReq, getRecordReq } from "../service/RecordService";
+import {
+  deleteRecordReq,
+  getRecordReq,
+  updateRecordReq,
+} from "../service/RecordService";
 import { IRequestState } from "../types/general";
-import { IRecord } from "../types/record";
+import { IDiversification, IRecord, IRecordForm } from "../types/record";
 
 export const useRecord = () => {
   const [record, setRecord] = React.useState<IRequestState<IRecord>>({
@@ -12,13 +17,17 @@ export const useRecord = () => {
     error: null,
     loading: true,
   });
-  const [loading, setLoading] = React.useState(true);
+  const [diversification, setDiversification] = React.useState<
+    IDiversification[]
+  >([]);
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const { recordId: id } = useParams();
 
   const getRecord = async () => {
     try {
       const record = await getRecordReq(id!);
+      setDiversification(getDiversification(record));
       handleSuccess(record, setRecord);
     } catch (e) {
       console.error(e);
@@ -38,9 +47,28 @@ export const useRecord = () => {
     setLoading(false);
   };
 
+  const updateRecord = async (record: IRecordForm) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const updatedRecord = await updateRecordReq(id!, record);
+    } catch (e) {
+      console.error(e);
+      setError(getErrorMessage(e));
+    }
+    setLoading(false);
+  };
+
   React.useEffect(() => {
     getRecord();
   }, [id]);
 
-  return { record, loading, error, deleteRecord };
+  return {
+    record,
+    loading,
+    error,
+    deleteRecord,
+    diversification,
+    updateRecord,
+  };
 };

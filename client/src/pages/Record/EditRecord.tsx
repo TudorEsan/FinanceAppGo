@@ -7,18 +7,11 @@ import {
   CircularProgress,
   Divider,
   Grid,
-  Icon,
   IconButton,
   Typography,
 } from "@mui/material";
-import {
-  Control,
-  FieldArrayWithId,
-  useFieldArray,
-  UseFieldArrayRemove,
-  useForm,
-} from "react-hook-form";
-import { IRecord, IRecordForm } from "../../types/record";
+import { useFieldArray, useForm } from "react-hook-form";
+import { IRecordForm } from "../../types/record";
 import {
   ControlledTextField,
   ControlledDatePicker,
@@ -28,7 +21,6 @@ import {
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAddRecord } from "../../hooks/useAddRecord";
-import { useBlock } from "../../hooks/useBlock";
 import { useRecord } from "../../hooks/useRecord";
 import { useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -69,12 +61,10 @@ export const EditRecord = () => {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isDirty },
   } = useForm<IRecordForm>({
     resolver: yupResolver(formSchema),
   });
-  useBlock(isDirty);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const {
     fields: stockFields,
@@ -123,7 +113,7 @@ export const EditRecord = () => {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" mb={4}>
-            Add Record
+            Update Record
           </Typography>
           <Grid container>
             <Grid item container md={11} spacing={2}>
@@ -182,7 +172,7 @@ export const EditRecord = () => {
               type="submit"
               sx={{ mr: 1 }}
             >
-              Add
+              Update
             </Button>
             <Button variant="outlined" color="primary">
               Discard

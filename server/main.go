@@ -26,7 +26,7 @@ func main() {
 
 	// routes
 	api := router.Group("/api")
-	netWorthRoutes := api.Group("networth")
+	netWorthRoutes := api.Group("records")
 	authRoutes := api.Group("auth")
 	routes.AuthRoutes(authRoutes)
 	routes.UserRoutes(api)

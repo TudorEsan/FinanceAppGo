@@ -13,26 +13,9 @@ type Diversificationable interface {
 	GetAssets() []Diversification
 }
 
-type NetWorth struct {
-	Id      primitive.ObjectID `json:"id" bson:"_id"`
-	UserId  primitive.ObjectID `json:"userId" bson:"userId" binding:"required"`
-	Records []Record           `json:"records" bson:"records"`
-}
-
-type Info struct {
-	Id                    primitive.ObjectID `json:"id" bson:"_id"`
-	InvestedAmount        float32            `json:"investedAmount,omitempty" bson:"investedAmount"`
-	Stocks                Stocks             `json:"stocks" bson:"stocks" binding:"required,dive"`
-	Cryptos               Cryptos            `json:"cryptos" bson:"cryptos" binding:"required"`
-	StockDiversification  []Diversification  `json:"stockDiversification" `
-	CryptoDiversification []Diversification  `json:"cryptoDiversification"`
-	CryptosValue          float32            `json:"cryptosValue,omitempty" bson:"cryptosValue"`
-	StocksValue           float32            `json:"stocksValue,omitempty" bson:"stocksValue"`
-	Liquidity             *float32           `json:"liquidity" bson:"liquidity" binding:"required,min=0"`
-}
-
 type Record struct {
-	Id                    primitive.ObjectID `json:"id,omitempty" bson:"id"`
+	Id                    primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	UserId                primitive.ObjectID `json:"userId,omitempty" bson:"userId"`
 	Date                  time.Time          `json:"date" bson:"date" binding:"required"`
 	InvestedAmount        *float32           `json:"investedAmount,omitempty" bson:"investedAmount"`
 	Stocks                Stocks             `json:"stocks" bson:"stocks" binding:"required,dive"`
@@ -101,7 +84,7 @@ func (crypto Crypto) GetValue() (sum float32) {
 }
 
 func roundPercent(f float32) float32 {
-	return float32(math.Round(float64(f*100))) 
+	return float32(math.Round(float64(f * 100)))
 }
 
 func (record Record) GetStockDiversification(stocksValue float32) (diversification []Diversification) {

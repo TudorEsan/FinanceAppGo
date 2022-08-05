@@ -1,6 +1,7 @@
 import { Box } from "@mui/system";
 import { ResponsivePie } from "@nivo/pie";
 import { BasicTooltip } from "@nivo/tooltip";
+import { useMobile } from "../../hooks/useMobile";
 import { IDiversification } from "../../types/record";
 
 interface IProps {
@@ -8,8 +9,9 @@ interface IProps {
 }
 
 export const MyPie = ({ data }: IProps) => {
+  const isMobile = useMobile();
   return (
-    <Box height={300} minWidth={400}>
+    <Box height={isMobile ? 250 : 300} width="100%" maxWidth={400}>
       {/* <p>tf is thiz</p> */}
       <ResponsivePie
         colors={{ scheme: "dark2" }}

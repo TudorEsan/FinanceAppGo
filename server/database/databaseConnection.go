@@ -21,7 +21,6 @@ func isInReleaseMode() bool {
 }
 
 func DbInstace() *mongo.Client {
-	fmt.Println("Connecting to database")
 
 	envs, err := godotenv.Read(".env")
 	if err != nil {
@@ -29,7 +28,6 @@ func DbInstace() *mongo.Client {
 	}
 	var mongoUrl string
 	if isInReleaseMode() {
-		fmt.Println("In Release Mode")
 		mongoUrl = envs["MONGO_REALEASE_URL"]
 	} else {
 		mongoUrl = envs["MONGO_URL"]

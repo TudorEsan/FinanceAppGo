@@ -31,7 +31,7 @@ export const useRecord = () => {
       handleSuccess(record, setRecord);
     } catch (e) {
       console.error(e);
-      handleError(setError, getErrorMessage(e));
+      handleError(setRecord, getErrorMessage(e));
     }
   };
 

@@ -7,7 +7,6 @@ import (
 	"App/models"
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -59,8 +58,6 @@ func Signup() gin.HandlerFunc {
 		}
 		c.SetCookie("token", jwt, 60*60*24*30, "", "", false, false)
 		c.SetCookie("refreshToken", jwt, 60*60*24*30, "", "", false, false)
-		fmt.Println(user.ID.Hex())
-		_, err = helper.InitNetWort(user.ID.Hex())
 		if err != nil {
 			helper.ReturnError(c, http.StatusInternalServerError, err)
 			return
@@ -81,7 +78,6 @@ func Login() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		fmt.Println("USER: ", user.Username)
 		err := userCollection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
 		if err != nil {
 			helper.ReturnError(c, http.StatusBadRequest, errors.New("not valid username"))
@@ -97,7 +93,6 @@ func Login() gin.HandlerFunc {
 			helper.ReturnError(c, http.StatusInternalServerError, err)
 			return
 		}
-		fmt.Println("\n\n", jwt, "\n\n", refreshToken, "\n\n")
 		foundUser, err = helper.UpdateTokens(c, jwt, refreshToken, foundUser.ID.Hex())
 		if err != nil {
 			helper.ReturnError(c, http.StatusBadRequest, err)

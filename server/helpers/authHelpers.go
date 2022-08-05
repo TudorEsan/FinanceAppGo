@@ -66,7 +66,6 @@ func CheckPassword(dbUser models.User, user models.User) (err error) {
 }
 
 func UpdateTokens(c *gin.Context, token string, refreshToken string, userId string) (models.User, error) {
-	fmt.Println("\n\nupdate tokens\n\n")
 	c.SetCookie("token", token, 60*60*24*30, "", "", false, false)
 	c.SetCookie("refreshToken", refreshToken, 60*60*24*30, "", "", false, false)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
@@ -80,10 +79,10 @@ func UpdateTokens(c *gin.Context, token string, refreshToken string, userId stri
 	opts := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
 	}
+	fmt.Println("UserId: ", userId)
 	err = userCollection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.D{
 		{"$set", bson.D{{"refreshToken", refreshToken}}},
 	}, &opts).Decode(&user)
-	fmt.Println("genreated user: ", user)
 	return user, err
 }
 

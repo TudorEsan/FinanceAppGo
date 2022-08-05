@@ -4,9 +4,9 @@ import (
 	"App/models"
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
@@ -90,19 +90,14 @@ func ValidateRefreshToken(refreshToken string) (models.User, error) {
 	if err != nil {
 		return models.User{}, err
 	}
-	fmt.Println(user)
 	if *user.RefreshToken != refreshToken {
-		fmt.Println("Desired: ", *user.RefreshToken)
-		fmt.Println("Actual: ", refreshToken)
 		return models.User{}, errors.New("authorization failed")
 	}
-	fmt.Println("USER", user)
 
 	return user, nil
 }
 
 func RemoveCookies(c *gin.Context) {
-	fmt.Println("RemoveCookies")
 	c.SetCookie("token", "", 60*60*24*30, "", "", false, false)
 	c.SetCookie("refreshToken", "", 60*60*24*30, "", "", false, false)
 }

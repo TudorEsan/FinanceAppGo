@@ -70,9 +70,16 @@ const mobileColums = [
 ];
 
 const RecordGrid = () => {
-  const { records, loading, error } = useRecords();
+  const {
+    records,
+    loading,
+    error,
+    handlePageChange,
+    handlePageSizeChange,
+    recordCount,
+		pageSize
+  } = useRecords();
   const isMobile = useMobile();
-
   return (
     <>
       <DataGrid
@@ -81,8 +88,14 @@ const RecordGrid = () => {
         loading={loading}
         error={error !== null ? undefined : error}
         disableSelectionOnClick
-        hideFooter
-        autoHeight
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        pagination
+        paginationMode="server"
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        rowCount={recordCount}
+				sx={{height: (pageSize * 52) + 'px'}}
       />
       {error && (
         <Typography mt={2} variant="body1" color="error">

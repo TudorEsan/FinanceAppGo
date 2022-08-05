@@ -2,7 +2,7 @@ import axios from "axios";
 import { IRecord, IRecordForm } from "../types/record";
 
 export const addRecordReq = async (record: IRecordForm) => {
-  console.log(record.date)
+  console.log(record.date);
   return axios.post("/api/networth/record", record);
 };
 
@@ -18,4 +18,8 @@ export const getRecordReq = async (id: string): Promise<IRecord> => {
 
 export const deleteRecordReq = async (id: string) => {
   return axios.delete(`/api/networth/record/${id}`);
-}
+};
+
+export const updateRecordReq = async (id: string, data: IRecordForm) => {
+  return axios.put(`/api/networth/record/${id}`, data);
+};

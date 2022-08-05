@@ -10,7 +10,7 @@ import {
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { ControlledTextField } from "../components/ControlledInputs/CotrolledTextField";
+import { ControlledTextField } from "../components/ControlledInputs/ControlledTextField";
 import { useAuth } from "../hooks/useAuth";
 
 

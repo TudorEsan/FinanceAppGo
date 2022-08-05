@@ -18,13 +18,20 @@ import {
   UseFieldArrayRemove,
   useForm,
 } from "react-hook-form";
-import { IRecordForm } from "../types/record";
+import { IRecord, IRecordForm } from "../../types/record";
+import {
+  ControlledTextField,
+  ControlledDatePicker,
+  Stocks,
+  Cryptos,
+} from "../../components";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useAddRecord } from "../hooks/useAddRecord";
-import { useBlock } from "../hooks/useBlock";
-import { ControlledTextField } from "./ControlledInputs/ControlledTextField";
-import { ControlledDatePicker } from "./ControlledInputs/ControlledDatePicker";
+import { useAddRecord } from "../../hooks/useAddRecord";
+import { useBlock } from "../../hooks/useBlock";
+import { useRecord } from "../../hooks/useRecord";
+import { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const formSchema = Yup.object({
   date: Yup.string().required("Date is required"),
@@ -55,140 +62,19 @@ const formSchema = Yup.object({
   ),
 });
 
-interface IRecordStocksProps {
-  fields: FieldArrayWithId<IRecordForm, "stocks", "id">[];
-  control: Control<IRecordForm, object>;
-  remove: UseFieldArrayRemove;
-}
-
-interface IRecordCryptosProps {
-  fields: FieldArrayWithId<IRecordForm, "cryptos", "id">[];
-  control: Control<IRecordForm, object>;
-  remove: UseFieldArrayRemove;
-}
-
-export const Stocks = ({ control, fields, remove }: IRecordStocksProps) => {
-  return (
-    <>
-      {fields.map((field, index) => (
-        <div key={field.id}>
-          <Grid
-            container
-            spacing={2}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Grid item container md={11} spacing={2} xs={12}>
-              <Grid item md={12} lg={4} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  control={control}
-                  name={`stocks.${index}.symbol`}
-                  label="Symbol"
-                />
-              </Grid>
-              <Grid item md={6} lg={4} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  control={control}
-                  type="number"
-                  name={`stocks.${index}.shares`}
-                  label="Shares"
-                />
-              </Grid>
-              <Grid item md={6} lg={4} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  type="number"
-                  control={control}
-                  name={`stocks.${index}.valuedAt`}
-                  label="Valued At"
-                />
-              </Grid>
-            </Grid>
-            <Grid item md={1} xs={12} textAlign="center" key={field.id + "1"}>
-              <IconButton onClick={() => remove(index)}>
-                <Remove sx={{ margin: "0 auto" }} />
-              </IconButton>
-            </Grid>
-          </Grid>
-          <Divider sx={{ marginBottom: 2, mt: 2 }} />
-        </div>
-      ))}
-    </>
-  );
-};
-
-const Cryptos = ({ control, fields, remove }: IRecordCryptosProps) => {
-  return (
-    <>
-      {fields.map((field, index) => (
-        <div key={field.id}>
-          <Grid
-            container
-            spacing={2}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Grid item container md={11} spacing={2} xs={12}>
-              <Grid item md={12} lg={4} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  control={control}
-                  name={`cryptos.${index}.symbol`}
-                  label="Symbol"
-                />
-              </Grid>
-              <Grid item md={6} lg={4} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  control={control}
-                  type="number"
-                  name={`cryptos.${index}.coins`}
-                  label="Coins"
-                />
-              </Grid>
-              <Grid item md={6} lg={4} xs={12}>
-                <ControlledTextField
-                  key={field.id}
-                  type="number"
-                  control={control}
-                  name={`cryptos.${index}.valuedAt`}
-                  label="Valued At"
-                />
-              </Grid>
-            </Grid>
-            <Grid item md={1} xs={12} textAlign="center">
-              <IconButton onClick={() => remove(index)}>
-                <Remove sx={{ margin: "0 auto" }} />
-              </IconButton>
-            </Grid>
-          </Grid>
-          <Divider sx={{ marginBottom: 2, mt: 2 }} />
-        </div>
-      ))}
-    </>
-  );
-};
-
-export const RecordCard = () => {
-  const { error, loading, addRecord } = useAddRecord();
+export const EditRecord = () => {
+  const { record, loading, error, updateRecord } = useRecord();
 
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors, isDirty },
   } = useForm<IRecordForm>({
-    defaultValues: {
-      date: new Date(),
-      stocks: [{ shares: 0, valuedAt: 0, symbol: "" }],
-      cryptos: [{ coins: 0, valuedAt: 0, symbol: "" }],
-    },
     resolver: yupResolver(formSchema),
   });
   useBlock(isDirty);
+  const navigate = useNavigate()
 
   const {
     fields: stockFields,
@@ -214,11 +100,24 @@ export const RecordCard = () => {
     cryptoAppend({ coins: 0, valuedAt: 0, symbol: "" });
   };
 
+  useEffect(() => {
+    if (record.data !== null) {
+      console.log(record.data);
+      reset(record.data);
+    }
+  }, [record]);
+
   const onSubmit = (data: IRecordForm) => {
     data.date = new Date(data.date).toISOString();
-    addRecord(data);
+    updateRecord(data);
+    navigate(-1);
   };
-
+  if (record.loading) {
+    return <CircularProgress />;
+  }
+  if (record.error) {
+    return <Typography color="error">{record.error}</Typography>;
+  }
   return (
     <Card>
       <CardContent>
@@ -238,7 +137,6 @@ export const RecordCard = () => {
               <Grid item md={6} xs={12}>
                 <ControlledTextField
                   name="liquidity"
-                  defaultValue={0}
                   label="Liquidity"
                   control={control}
                   type="number"

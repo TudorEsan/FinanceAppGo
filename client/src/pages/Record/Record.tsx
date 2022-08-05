@@ -22,12 +22,12 @@ import { Box } from "@mui/system";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import React from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { MyCard } from "../components/Cards/MyCard";
-import { MyPie } from "../components/Charts/PieChart";
-import { formatDate } from "../helpers/date";
-import { useMobile } from "../hooks/useMobile";
-import { useRecord } from "../hooks/useRecord";
-import { ICrypto, IRecord, IStock } from "../types/record";
+import { MyCard } from "../../components/Cards/MyCard";
+import { MyPie } from "../../components/Charts/PieChart";
+import { formatDate } from "../../helpers/date";
+import { useMobile } from "../../hooks/useMobile";
+import { useRecord } from "../../hooks/useRecord";
+import { ICrypto, IRecord, IStock } from "../../types/record";
 
 interface IStockGridProps {
   stocks: IStock[];
@@ -206,7 +206,7 @@ const OverviewTable = ({ record }: { record: IRecord }) => {
 };
 
 export const Record = () => {
-  const { record, loading, error, deleteRecord } = useRecord();
+  const { record, loading, error, deleteRecord,  diversification} = useRecord();
   const navigate = useNavigate();
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
 
@@ -251,7 +251,7 @@ export const Record = () => {
         >
           <Typography variant="h4">Record</Typography>
           <Box>
-            <Button sx={{ mr: 2 }} variant="contained" color="primary">
+            <Button sx={{ mr: 2 }} variant="contained" color="primary" onClick={() => navigate('edit')}>
               Edit
             </Button>
             <Button
@@ -278,6 +278,7 @@ export const Record = () => {
         >
           <MyPie data={record!.data!.cryptoDiversification} />
           <MyPie data={record!.data!.stockDiversification} />
+          <MyPie data={diversification} />
         </Box>
         <OverviewTable record={record!.data!} />
       </MyCard>

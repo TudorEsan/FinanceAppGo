@@ -5,9 +5,10 @@ import { Login } from "../pages/Login";
 import { Protected } from "../pages/Home";
 import { Register } from "../pages/Register";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { AddRecord } from "../pages/AddRecord";
+import { AddRecord } from "../pages/Record/AddRecord";
 import { Records } from "../pages/Records";
-import { Record } from "../pages/Record";
+import { Record } from "../pages/Record/Record";
+import { EditRecord } from "../pages/Record/EditRecord";
 
 export const AppRoutes = () => {
   return (
@@ -34,6 +35,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Record />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/records/:recordId/edit"
+        element={
+          <ProtectedRoute>
+            <EditRecord />
           </ProtectedRoute>
         }
       />

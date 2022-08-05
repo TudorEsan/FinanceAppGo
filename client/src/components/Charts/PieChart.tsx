@@ -8,7 +8,6 @@ interface IProps {
 }
 
 export const MyPie = ({ data }: IProps) => {
-  console.log(data);
   return (
     <Box height={300} minWidth={400}>
       {/* <p>tf is thiz</p> */}
@@ -38,7 +37,6 @@ export const MyPie = ({ data }: IProps) => {
         }}
         // ={(d) => `${d}%`}
         tooltip={(d) => {
-          console.log(d);
           return (
             <BasicTooltip
               id={d.datum.id}

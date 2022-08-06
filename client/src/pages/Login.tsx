@@ -13,8 +13,6 @@ import { useNavigate } from "react-router-dom";
 import { ControlledTextField } from "../components/ControlledInputs/ControlledTextField";
 import { useAuth } from "../hooks/useAuth";
 
-
-
 export const Login = () => {
   const navigate = useNavigate();
   const { error, isLoading, login } = useAuth();
@@ -61,6 +59,7 @@ export const Login = () => {
             <ControlledTextField
               name="username"
               label="Username"
+              autofill="username"
               control={control}
               rules={{ required: true }}
             />
@@ -68,6 +67,7 @@ export const Login = () => {
               name="password"
               label="Password"
               control={control}
+              autofill="current-password"
               rules={{ required: true }}
               type="password"
             />

@@ -29,7 +29,7 @@ func GetUser(userId string) (models.User, error) {
 func GetUserFromContext(c *gin.Context) (user models.User, err error) {
 	userAny, exists := c.Get("user")
 	if !exists {
-		err = errors.New("key does not exisst in context")
+		err = errors.New("key does not exist in context")
 		return
 	}
 	user, ok := userAny.(models.User)

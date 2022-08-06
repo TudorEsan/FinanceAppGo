@@ -26,10 +26,12 @@ func main() {
 
 	// routes
 	api := router.Group("/api")
+	overviewRoutes := api.Group("/overview")
 	netWorthRoutes := api.Group("records")
 	authRoutes := api.Group("auth")
 	routes.AuthRoutes(authRoutes)
 	routes.UserRoutes(api)
+	routes.OverviewRoutes(overviewRoutes)
 	routes.NetWorthRoutes(netWorthRoutes)
 
 	// Start server

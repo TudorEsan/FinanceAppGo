@@ -9,6 +9,7 @@ interface ControlledTextFieldProps {
   control: any;
   rules?: any;
   disabled?: boolean;
+  autofill?: string;
   type?: string;
 }
 
@@ -19,6 +20,7 @@ export function ControlledTextField({
   defaultValue,
   rules,
   type,
+  autofill,
   ...rest
 }: ControlledTextFieldProps) {
   const textFieldRef = useRef<any>(null);
@@ -36,6 +38,7 @@ export function ControlledTextField({
               fullWidth
               type={type}
               variant="outlined"
+              autoComplete={autofill || "off"}
               label={label}
               value={value || ""}
               onChange={onChange}

@@ -25,36 +25,7 @@ import { useAddRecord } from "../hooks/useAddRecord";
 import { useBlock } from "../hooks/useBlock";
 import { ControlledTextField } from "./ControlledInputs/ControlledTextField";
 import { ControlledDatePicker } from "./ControlledInputs/ControlledDatePicker";
-
-const formSchema = Yup.object({
-  date: Yup.string().required("Date is required"),
-  liquidity: Yup.number()
-    .required("Liquidity is required")
-    .min(0, "Liquidity must be greater or equal to 0"),
-  stocks: Yup.array().of(
-    Yup.object().shape({
-      symbol: Yup.string().required("Symbol is required"),
-      valuedAt: Yup.number()
-        .required("Field is required")
-        .min(0, "Price must be greater or equal to 0"),
-      shares: Yup.number()
-        .required("Field is required")
-        .min(0, "Shares must be greater or equal to 0"),
-    })
-  ),
-  cryptos: Yup.array().of(
-    Yup.object().shape({
-      symbol: Yup.string().required("Symbol is required"),
-      valuedAt: Yup.number()
-        .required("Field is required")
-        .min(0, "Price must be greater or equal to 0"),
-      coins: Yup.number()
-        .required("Field is required")
-        .min(0, "Coins must be greater or equal to 0"),
-    })
-  ),
-});
-
+import { recordFormSchema } from "../helpers/validation/recordValidation";
 interface IRecordStocksProps {
   fields: FieldArrayWithId<IRecordForm, "stocks", "id">[];
   control: Control<IRecordForm, object>;
@@ -179,14 +150,14 @@ export const RecordCard = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { isDirty },
   } = useForm<IRecordForm>({
     defaultValues: {
       date: new Date(),
       stocks: [{ shares: 0, valuedAt: 0, symbol: "" }],
       cryptos: [{ coins: 0, valuedAt: 0, symbol: "" }],
     },
-    resolver: yupResolver(formSchema),
+    resolver: yupResolver(recordFormSchema),
   });
   useBlock(isDirty);
 

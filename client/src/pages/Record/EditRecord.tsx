@@ -18,51 +18,18 @@ import {
   Stocks,
   Cryptos,
 } from "../../components";
-import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useAddRecord } from "../../hooks/useAddRecord";
 import { useRecord } from "../../hooks/useRecord";
 import { useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { recordFormSchema } from "../../helpers/validation/recordValidation";
 
-const formSchema = Yup.object({
-  date: Yup.string().required("Date is required"),
-  liquidity: Yup.number()
-    .required("Liquidity is required")
-    .min(0, "Liquidity must be greater or equal to 0"),
-  stocks: Yup.array().of(
-    Yup.object().shape({
-      symbol: Yup.string().required("Symbol is required"),
-      valuedAt: Yup.number()
-        .required("Field is required")
-        .min(0, "Price must be greater or equal to 0"),
-      shares: Yup.number()
-        .required("Field is required")
-        .min(0, "Shares must be greater or equal to 0"),
-    })
-  ),
-  cryptos: Yup.array().of(
-    Yup.object().shape({
-      symbol: Yup.string().required("Symbol is required"),
-      valuedAt: Yup.number()
-        .required("Field is required")
-        .min(0, "Price must be greater or equal to 0"),
-      coins: Yup.number()
-        .required("Field is required")
-        .min(0, "Coins must be greater or equal to 0"),
-    })
-  ),
-});
 
 export const EditRecord = () => {
   const { record, loading, error, updateRecord } = useRecord();
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-  } = useForm<IRecordForm>({
-    resolver: yupResolver(formSchema),
+  const { control, handleSubmit, reset } = useForm<IRecordForm>({
+    resolver: yupResolver(recordFormSchema),
   });
   const navigate = useNavigate();
 

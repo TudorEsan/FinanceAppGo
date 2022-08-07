@@ -29,7 +29,7 @@ export function ControlledTextField({
     <Controller
       control={control}
       name={name}
-      defaultValue={defaultValue}
+      defaultValue={defaultValue || (type === "number" ? 0 : "")}
       rules={rules}
       render={({ field: { onChange, value }, fieldState: { error } }) => {
         return (

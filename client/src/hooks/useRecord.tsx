@@ -53,8 +53,9 @@ export const useRecord = () => {
     try {
       const updatedRecord = await updateRecordReq(id!, record);
     } catch (e) {
-      console.error(e);
       setError(getErrorMessage(e));
+      setLoading(false);
+      throw e;
     }
     setLoading(false);
   };

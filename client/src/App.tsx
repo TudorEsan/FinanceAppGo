@@ -4,20 +4,7 @@ import React from "react";
 import { AuthContext, AuthProvider } from "./context/AuthProvider";
 import { AppRoutes } from "./router/Routes";
 import "./index.css";
-import axios from "axios";
-import { deleteAllCookies } from "./helpers/authHelper";
-axios.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response.status === 401) {
-      deleteAllCookies();
-      window.location.reload();
-    }
-    return Promise.reject(error);
-  }
-);
+import './axiosConfig'
 
 function App() {
   const { palette } = createTheme();

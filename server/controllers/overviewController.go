@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetOverview() gin.HandlerFunc {
+func GetNetWorthOverview() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {

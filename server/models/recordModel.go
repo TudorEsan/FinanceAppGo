@@ -25,6 +25,7 @@ type Record struct {
 	CryptosValue          *float32           `json:"cryptosValue,omitempty" bson:"cryptosValue"`
 	StocksValue           *float32           `json:"stocksValue,omitempty" bson:"stocksValue"`
 	Liquidity             *float32           `json:"liquidity" bson:"liquidity" binding:"required,min=0"`
+	TotalInvested         float32            `json:"totalInvested,omitempty" bson:"totalInvested"`
 }
 
 type Diversification struct {
@@ -62,6 +63,7 @@ type RecordBody struct {
 	CryptosValue          float32           `json:"cryptosValue,omitempty"`
 	StocksValue           float32           `json:"stocksValue,omitempty"`
 	Liquidity             *float32          `json:"liquidity" binding:"required,min=0"`
+	TotalInvested         float32           `json:"totalInvested,omitempty"`
 }
 
 func (stocks Stocks) GetValue() (sum float32) {
@@ -125,6 +127,7 @@ func (record *Record) GenerateStatistics() {
 	wg.Wait()
 	investedAmount := *record.CryptosValue + *record.StocksValue
 	record.InvestedAmount = &investedAmount
+	record.TotalInvested = investedAmount + *record.Liquidity
 }
 
 // func (recordBody RecordBody) Split() (record Record, info Info) {

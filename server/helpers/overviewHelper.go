@@ -18,12 +18,27 @@ func GetYearRecords(userId primitive.ObjectID, year int) (monthsOverview []model
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	curr, err := RecordCollection.Aggregate(ctx, bson.A{
-		bson.D{{"$match", bson.D{{"date", bson.D{{"$gte", time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)}}}}}},
+		bson.M{
+			"$match": bson.M{
+				"date": bson.M{
+					"$gte": time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+				},
+				"userId": bson.M{
+					"$eq": userId,
+				},
+			},
+		},
 		bson.M{
 			"$group": bson.M{
 				"_id":            bson.M{"$month": "$date"},
 				"liquidity":      bson.M{"$last": "$liquidity"},
 				"investedAmount": bson.M{"$last": "$investedAmount"},
+				"date":           bson.M{"$last": "$date"},
+			},
+		},
+		bson.M{
+			"$sort": bson.M{
+				"date": 1,
 			},
 		},
 		bson.M{
@@ -34,7 +49,6 @@ func GetYearRecords(userId primitive.ObjectID, year int) (monthsOverview []model
 						"$investedAmount",
 					},
 				},
-				"month": "$_id",
 			},
 		},
 	})

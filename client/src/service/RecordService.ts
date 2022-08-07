@@ -1,9 +1,9 @@
-import axios from "axios";
+import axios from "../axiosConfig";
 import { IRecord, IRecordForm } from "../types/record";
 
 export const addRecordReq = async (record: IRecordForm) => {
   console.log(record.date);
-  return axios.post("/api/records", record);
+  return axios.post("/records", record);
 };
 
 export const getRecordsReq = async (
@@ -11,25 +11,25 @@ export const getRecordsReq = async (
   pageSize = 0
 ): Promise<IRecord[]> => {
   const resp = await axios.get(
-    `/api/records?page=${page}&pageSize=${pageSize}`
+    `/records?page=${page}&pageSize=${pageSize}`
   );
   return resp.data.records as IRecord[];
 };
 
 export const getRecordReq = async (id: string): Promise<IRecord> => {
-  const resp = await axios.get(`/api/records/${id}`);
+  const resp = await axios.get(`/records/${id}`);
   return resp.data.record as IRecord;
 };
 
 export const deleteRecordReq = async (id: string) => {
-  return axios.delete(`/api/records/${id}`);
+  return axios.delete(`/records/${id}`);
 };
 
 export const updateRecordReq = async (id: string, data: IRecordForm) => {
-  return axios.put(`/api/records/${id}`, data);
+  return axios.put(`/records/${id}`, data);
 };
 
 export const getRecordCountReq = async (): Promise<number> => {
-  const resp = await axios.get("/api/records/count");
+  const resp = await axios.get("/records/count");
   return resp.data.recordCount as number;
 };

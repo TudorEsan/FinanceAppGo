@@ -1,14 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import App from "../App";
-import { Login } from "../pages/Login";
-import { Protected } from "../pages/Home";
-import { Register } from "../pages/Register";
+import { AddRecord, Dashboard, EditRecord, Login, Record, Records, Register } from "../pages";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { AddRecord } from "../pages/Record/AddRecord";
-import { Records } from "../pages/Records";
-import { Record } from "../pages/Record/Record";
-import { EditRecord } from "../pages/Record/EditRecord";
 
 export const AppRoutes = () => {
   return (
@@ -17,7 +10,7 @@ export const AppRoutes = () => {
         path="/"
         element={
           <ProtectedRoute>
-            <Protected />
+            <Dashboard />
           </ProtectedRoute>
         }
       />

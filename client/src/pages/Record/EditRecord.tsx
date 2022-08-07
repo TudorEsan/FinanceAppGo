@@ -65,11 +65,15 @@ export const EditRecord = () => {
     }
   }, [record]);
 
-  const onSubmit = (data: IRecordForm) => {
+  const onSubmit = async (data: IRecordForm) => {
     data.date = getUtcIso(data.date);
     console.log(data);
-    updateRecord(data);
-    navigate(-1);
+    try {
+      await updateRecord(data);
+      navigate(-1);
+    } catch (e) {
+      console.error(e);
+    }
   };
   if (record.loading) {
     return <CircularProgress />;

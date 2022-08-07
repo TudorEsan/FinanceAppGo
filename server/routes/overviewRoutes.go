@@ -9,5 +9,5 @@ import (
 
 func OverviewRoutes(incomingRoutes *gin.RouterGroup) {
 	incomingRoutes.Use(middleware.VerifyAuth())
-	incomingRoutes.GET("", controller.GetOverview())
+	incomingRoutes.GET("/networth", controller.GetNetWorthOverview())
 }

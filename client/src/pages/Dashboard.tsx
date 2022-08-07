@@ -1,11 +1,12 @@
 import { Typography } from "@mui/material";
 import React from "react";
+import { MonthsOverview } from "../components";
 import { GeneralDiversification } from "../components/Cards/GeneralDiversification";
 
-export const Protected = () => {
+export const Dashboard = () => {
   return (
     <>
-      <GeneralDiversification />
+      <MonthsOverview />
     </>
   );
 };

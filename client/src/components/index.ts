@@ -6,3 +6,4 @@ export * from "./ControlledInputs/Stocks";
 export * from "./ControlledInputs/Cryptos";
 export * from "./Cards/MyCard";
 export * from "./Cards/GeneralDiversification";
+export * from './Dashboard/MonthsOverview'

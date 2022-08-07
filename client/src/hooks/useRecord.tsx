@@ -52,6 +52,7 @@ export const useRecord = () => {
     setError(null);
     try {
       const updatedRecord = await updateRecordReq(id!, record);
+      
     } catch (e) {
       setError(getErrorMessage(e));
       setLoading(false);

@@ -75,6 +75,8 @@ func UpdateRecord(userId primitive.ObjectID, record models.Record) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	record.GenerateStatistics()
+	fmt.Println(userId)
+	fmt.Print(record.Id)
 	_, err = RecordCollection.UpdateOne(ctx, bson.M{"userId": userId, "_id": record.Id}, bson.M{"$set": record})
 	fmt.Print("ERR ", err)
 	return

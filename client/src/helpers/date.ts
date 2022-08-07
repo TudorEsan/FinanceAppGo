@@ -12,3 +12,17 @@ export function formatDate(date: Date) {
     date.getFullYear(),
   ].join("-");
 }
+
+export const getUtcIso = (date: any) => {
+  if (!date) {
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0);
+    return date.toISOString();
+  }
+  if (typeof date === "string") {
+    date = new Date(date);
+  }
+  const newDate = date;
+  newDate.setUTCHours(0, 0, 0, 0);
+  return newDate.toISOString();
+};

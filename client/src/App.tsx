@@ -6,7 +6,6 @@ import { AppRoutes } from "./router/Routes";
 import "./index.css";
 import axios from "axios";
 import { deleteAllCookies } from "./helpers/authHelper";
-
 axios.interceptors.response.use(
   (response) => {
     return response;

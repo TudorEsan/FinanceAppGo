@@ -23,7 +23,7 @@ import { useRecord } from "../../hooks/useRecord";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { recordFormSchema } from "../../helpers/validation/recordValidation";
-
+import { getUtcIso } from "../../helpers/date";
 
 export const EditRecord = () => {
   const { record, loading, error, updateRecord } = useRecord();
@@ -60,12 +60,14 @@ export const EditRecord = () => {
   useEffect(() => {
     if (record.data !== null) {
       console.log(record.data);
+      record.data.date = new Date(getUtcIso(record.data.date));
       reset(record.data);
     }
   }, [record]);
 
   const onSubmit = (data: IRecordForm) => {
-    data.date = new Date(data.date).toISOString();
+    data.date = getUtcIso(data.date);
+    console.log(data);
     updateRecord(data);
     navigate(-1);
   };

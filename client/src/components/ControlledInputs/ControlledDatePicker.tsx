@@ -1,17 +1,18 @@
-import MomentUtils from "@date-io/moment";
+import DateFnsUtils from "@date-io/date-fns";
 import { Controller } from "react-hook-form";
 import { TextField } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-
+import { format } from "date-fns";
+import { zonedTimeToUtc } from "date-fns-tz";
+import { getUtcIso } from "../../helpers/date";
 
 interface ControlledDatePickerProps {
-    name: string;
-    label: string;
-    defaultValue?: any;
-    control: any;
-    rest?: any;
+  name: string;
+  label: string;
+  defaultValue?: any;
+  control: any;
+  rest?: any;
 }
-
 
 export function ControlledDatePicker({
   name,
@@ -24,9 +25,9 @@ export function ControlledDatePicker({
     <Controller
       control={control}
       name={name}
-      defaultValue={defaultValue || null}
+      defaultValue={getUtcIso(defaultValue)}
       render={({ field: { onChange, value } }) => (
-        <LocalizationProvider dateAdapter={MomentUtils}>
+        <LocalizationProvider dateAdapter={DateFnsUtils}>
           <DatePicker
             label={label}
             value={value}

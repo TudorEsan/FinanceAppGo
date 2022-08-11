@@ -1,8 +1,8 @@
 import { GridCallbackDetails } from "@mui/x-data-grid";
 import React, { useEffect } from "react";
-import { getErrorMessage } from "../helpers/errors";
-import { getRecordCountReq, getRecordsReq } from "../service/RecordService";
-import { IRecord } from "../types/record";
+import { getErrorMessage } from "../../helpers/errors";
+import { getRecordCountReq, getRecordsReq } from "../../service/RecordService";
+import { IRecord } from "../../types/record";
 
 export const useRecords = () => {
   const [records, setRecords] = React.useState<IRecord[]>([]);

@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { AddRecord, Dashboard, EditRecord, Login, Record, Records, Register } from "../pages";
+import { CloneRecord } from "../pages/Record/CloneRecord";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export const AppRoutes = () => {
@@ -28,6 +29,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Record />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/records/:recordId/clone"
+        element={
+          <ProtectedRoute>
+            <CloneRecord />
           </ProtectedRoute>
         }
       />

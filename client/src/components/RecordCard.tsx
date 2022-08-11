@@ -21,11 +21,12 @@ import {
 import { IRecordForm } from "../types/record";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useAddRecord } from "../hooks/useAddRecord";
 import { useBlock } from "../hooks/useBlock";
 import { ControlledTextField } from "./ControlledInputs/ControlledTextField";
 import { ControlledDatePicker } from "./ControlledInputs/ControlledDatePicker";
 import { recordFormSchema } from "../helpers/validation/recordValidation";
+import { useNavigate } from "react-router-dom";
+import { useRecordProvider } from "../hooks/records/useRecordProvider";
 interface IRecordStocksProps {
   fields: FieldArrayWithId<IRecordForm, "stocks", "id">[];
   control: Control<IRecordForm, object>;
@@ -145,7 +146,7 @@ const Cryptos = ({ control, fields, remove }: IRecordCryptosProps) => {
 };
 
 export const RecordCard = () => {
-  const { error, loading, addRecord } = useAddRecord();
+  const { error, loading, addRecord } = useRecordProvider();
 
   const {
     control,
@@ -177,6 +178,7 @@ export const RecordCard = () => {
     control,
     name: "cryptos",
   });
+  const navigate = useNavigate();
 
   const appendStock = () => {
     stockAppend({ shares: 0, valuedAt: 0, symbol: "" });
@@ -185,9 +187,14 @@ export const RecordCard = () => {
     cryptoAppend({ coins: 0, valuedAt: 0, symbol: "" });
   };
 
-  const onSubmit = (data: IRecordForm) => {
+  const onSubmit = async (data: IRecordForm) => {
     data.date = new Date(data.date).toISOString();
-    addRecord(data);
+    try {
+      await addRecord(data);
+      navigate("/records");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

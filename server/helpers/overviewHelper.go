@@ -28,13 +28,16 @@ func GetYearRecords(userId primitive.ObjectID, year int) (monthsOverview []model
 				},
 			},
 		},
+		// bson.M{
+		// 	"$group": bson.M{
+		// 		"_id":            bson.M{"$month": "$date"},
+		// 		"liquidity":      bson.M{"$last": "$liquidity"},
+		// 		"investedAmount": bson.M{"$last": "$investedAmount"},
+		// 		"date":           bson.M{"$last": "$date"},
+		// 	},
+		// },
 		bson.M{
-			"$group": bson.M{
-				"_id":            bson.M{"$month": "$date"},
-				"liquidity":      bson.M{"$last": "$liquidity"},
-				"investedAmount": bson.M{"$last": "$investedAmount"},
-				"date":           bson.M{"$last": "$date"},
-			},
+			"$limit": 10,
 		},
 		bson.M{
 			"$sort": bson.M{

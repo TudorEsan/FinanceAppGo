@@ -1,15 +1,15 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { getErrorMessage } from "../helpers/errors";
-import { getDiversification } from "../helpers/recordHelper";
-import { handleError, handleSuccess } from "../helpers/state";
+import { getErrorMessage } from "../../helpers/errors";
+import { getDiversification } from "../../helpers/recordHelper";
+import { handleError, handleSuccess } from "../../helpers/state";
 import {
   deleteRecordReq,
   getRecordReq,
   updateRecordReq,
-} from "../service/RecordService";
-import { IRequestState } from "../types/general";
-import { IDiversification, IRecord, IRecordForm } from "../types/record";
+} from "../../service/RecordService";
+import { IRequestState } from "../../types/general";
+import { IDiversification, IRecord, IRecordForm } from "../../types/record";
 
 export const useRecord = () => {
   const [record, setRecord] = React.useState<IRequestState<IRecord>>({

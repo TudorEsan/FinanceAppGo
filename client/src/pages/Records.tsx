@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDate } from "../helpers/date";
 import { useMobile } from "../hooks/useMobile";
-import { useRecords } from "../hooks/useRecords";
+import { useRecords } from "../hooks/records/useRecords";
 
 const columns: GridColDef[] = [
   // { field: 'id', headerName: 'ID', width: 100 },

@@ -5,7 +5,7 @@ import { MyCard } from "../Cards/MyCard";
 import { LineChart } from "../Charts/LineChart";
 import { Typography } from "@mui/material";
 
-export const MonthsOverview = () => {
+export const RecordOverview = () => {
   const { netWorth, loading, error, setYear } = useNetworthOverview();
   if (loading) return <div>Loading...</div>;
   if (error) return <Typography color="error">{error}</Typography>;

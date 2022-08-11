@@ -26,7 +26,7 @@ import { MyCard } from "../../components/Cards/MyCard";
 import { MyPie } from "../../components/Charts/PieChart";
 import { formatDate } from "../../helpers/date";
 import { useMobile } from "../../hooks/useMobile";
-import { useRecord } from "../../hooks/useRecord";
+import { useRecord } from "../../hooks/records/useRecord";
 import { ICrypto, IRecord, IStock } from "../../types/record";
 
 interface IStockGridProps {
@@ -206,7 +206,7 @@ const OverviewTable = ({ record }: { record: IRecord }) => {
 };
 
 export const Record = () => {
-  const { record, loading, error, deleteRecord,  diversification} = useRecord();
+  const { record, loading, error, deleteRecord, diversification } = useRecord();
   const navigate = useNavigate();
   const [confirmationOpen, setConfirmationOpen] = React.useState(false);
 
@@ -251,8 +251,21 @@ export const Record = () => {
         >
           <Typography variant="h4">Record</Typography>
           <Box>
-            <Button sx={{ mr: 2 }} variant="contained" color="primary" onClick={() => navigate('edit')}>
+            <Button
+              sx={{ mr: 2 }}
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("edit")}
+            >
               Edit
+            </Button>
+            <Button
+              sx={{ mr: 2 }}
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("clone")}
+            >
+              Clone
             </Button>
             <Button
               variant="outlined"

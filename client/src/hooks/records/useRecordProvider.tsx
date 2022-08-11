@@ -1,21 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getErrorMessage } from "../helpers/errors";
-import { addRecordReq } from "../service/RecordService";
-import { IRecordForm } from "../types/record";
+import { getErrorMessage } from "../../helpers/errors";
+import { addRecordReq } from "../../service/RecordService";
+import { IRecordForm } from "../../types/record";
 
-export const useAddRecord = () => {
+export const useRecordProvider = () => {
+  // provides record functions 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
-  const navigate = useNavigate();
   const addRecord = async (data: IRecordForm) => {
+    let response: any;
     try {
       setLoading(true);
-      await addRecordReq(data);
+      response = await addRecordReq(data);
       setError(null);
-      navigate("/records");
     } catch (error) {
       setError(getErrorMessage(error));
+      throw error;
     }
     setLoading(false);
   };

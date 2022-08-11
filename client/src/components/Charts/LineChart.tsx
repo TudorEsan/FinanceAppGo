@@ -12,8 +12,14 @@ export const LineChart = ({ id, data }: IProps) => {
   const isMobile = useMobile();
   const serie = { id, data } as Serie;
   return (
-    <Box height={isMobile ? 300 : 350} width="100%" maxWidth={1200}>
+    <Box
+      // sx={{ display: "inline-block" }}
+      height={isMobile ? 300 : 350}
+      maxWidth={1200}
+      margin={0}
+    >
       <ResponsiveLine
+        colors={{ scheme: "category10" }}
         data={[serie]}
         margin={{ top: 50, right: 50, bottom: 50, left: 70 }}
         xScale={{ type: "point" }}
@@ -30,7 +36,7 @@ export const LineChart = ({ id, data }: IProps) => {
           // orient: "bottom",
           tickSize: 5,
           tickPadding: 5,
-          tickRotation: 0,
+          tickRotation: 18,
           legend: "date",
 
           legendOffset: 36,

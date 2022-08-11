@@ -24,9 +24,10 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { recordFormSchema } from "../../helpers/validation/recordValidation";
 import { getUtcIso } from "../../helpers/date";
+import { useCloneRecord } from "../../hooks/records/useCloneRecord";
 
-export const EditRecord = () => {
-  const { record, loading, error, updateRecord } = useRecord();
+export const CloneRecord = () => {
+  const { cloneRecord, loading, error, addRecord } = useCloneRecord();
 
   const { control, handleSubmit, reset } = useForm<IRecordForm>({
     resolver: yupResolver(recordFormSchema),
@@ -58,35 +59,35 @@ export const EditRecord = () => {
   };
 
   useEffect(() => {
-    if (record.data !== null) {
-      console.log(record.data);
-      record.data.date = new Date(getUtcIso(record.data.date));
-      reset(record.data);
+    if (cloneRecord.data !== null) {
+      console.log(cloneRecord.data);
+      cloneRecord.data.date = new Date(getUtcIso(cloneRecord.data.date));
+      reset(cloneRecord.data);
     }
-  }, [record]);
+  }, [cloneRecord]);
 
   const onSubmit = async (data: IRecordForm) => {
     data.date = getUtcIso(data.date);
     console.log(data);
     try {
-      await updateRecord(data);
-      navigate(-1);
+      await addRecord(data);
+      navigate("records");
     } catch (e) {
       console.error(e);
     }
   };
-  if (record.loading) {
+  if (cloneRecord.loading) {
     return <CircularProgress />;
   }
-  if (record.error) {
-    return <Typography color="error">{record.error}</Typography>;
+  if (cloneRecord.error) {
+    return <Typography color="error">{cloneRecord.error}</Typography>;
   }
   return (
     <Card>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" mb={4}>
-            Update Record
+            Clone cloneRecord
           </Typography>
           <Grid container>
             <Grid item container md={11} spacing={2}>
@@ -145,7 +146,7 @@ export const EditRecord = () => {
               type="submit"
               sx={{ mr: 1 }}
             >
-              Update
+              Add
             </Button>
             <Button variant="outlined" color="primary">
               Discard

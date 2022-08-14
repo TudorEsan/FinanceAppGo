@@ -19,7 +19,8 @@ export const LineChart = ({ id, data }: IProps) => {
       margin={0}
     >
       <ResponsiveLine
-        colors={{ scheme: "category10" }}
+        colors={{ scheme: "accent" }}
+        yFormat={(d) => d + "$"}
         data={[serie]}
         margin={{ top: 50, right: 50, bottom: 50, left: 70 }}
         xScale={{ type: "point" }}

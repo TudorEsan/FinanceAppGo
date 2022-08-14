@@ -19,7 +19,7 @@ import {
   Cryptos,
 } from "../../components";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useRecord } from "../../hooks/records/useRecord";
+import { useRecord } from "../../hooks/useRecord";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { recordFormSchema } from "../../helpers/validation/recordValidation";
@@ -87,7 +87,7 @@ export const CloneRecord = () => {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" mb={4}>
-            Clone cloneRecord
+            Clone Record
           </Typography>
           <Grid container>
             <Grid item container md={11} spacing={2}>

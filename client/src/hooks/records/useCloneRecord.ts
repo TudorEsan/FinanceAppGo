@@ -2,8 +2,8 @@ import React from "react";
 import { handleError, handleSuccess } from "../../helpers/state";
 import { IRequestState } from "../../types/general";
 import { IRecord } from "../../types/record";
+import { useRecord } from "../useRecord";
 import { useRecordProvider } from "./useRecordProvider";
-import { useRecord } from "./useRecord";
 
 export const useCloneRecord = () => {
   const { record } = useRecord();

@@ -39,7 +39,6 @@ const columns: GridColDef[] = [
     field: "netWorth",
     headerName: "Total $",
     renderCell: (rowData: GridRenderCellParams<Date>) => {
-      console.log(rowData);
       return <>{round(rowData.row.investedAmount + rowData.row.liquidity)}</>;
     },
     flex: 1,

@@ -13,8 +13,9 @@ func GetCurrentYear() int {
 	return time.Now().Year()
 }
 
-func GetYearRecords(userId primitive.ObjectID, year int) (monthsOverview []models.MonthOverview, err error) {
-	monthsOverview = make([]models.MonthOverview, 0)
+func GetYearRecords(userId primitive.ObjectID, year int) (overview models.Overview, err error) {
+	overview.NetworthOverview = make([]models.NetworthOverview, 0)
+	overview.LiquidityOverview = make([]models.LiquidityOverview, 0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	curr, err := RecordCollection.Aggregate(ctx, bson.A{
@@ -28,14 +29,6 @@ func GetYearRecords(userId primitive.ObjectID, year int) (monthsOverview []model
 				},
 			},
 		},
-		// bson.M{
-		// 	"$group": bson.M{
-		// 		"_id":            bson.M{"$month": "$date"},
-		// 		"liquidity":      bson.M{"$last": "$liquidity"},
-		// 		"investedAmount": bson.M{"$last": "$investedAmount"},
-		// 		"date":           bson.M{"$last": "$date"},
-		// 	},
-		// },
 		bson.M{
 			"$limit": 10,
 		},
@@ -60,12 +53,18 @@ func GetYearRecords(userId primitive.ObjectID, year int) (monthsOverview []model
 		return
 	}
 	for curr.Next(ctx) {
-		var monthOverview models.MonthOverview
-		err = curr.Decode(&monthOverview)
+		var netWorthOverview models.NetworthOverview
+		var liquidityOverview models.LiquidityOverview
+		err = curr.Decode(&netWorthOverview)
 		if err != nil {
 			return
 		}
-		monthsOverview = append(monthsOverview, monthOverview)
+		err = curr.Decode(&liquidityOverview)
+		if err != nil {
+			return
+		}
+		overview.NetworthOverview = append(overview.NetworthOverview, netWorthOverview)
+		overview.LiquidityOverview = append(overview.LiquidityOverview, models.LiquidityOverview(liquidityOverview))
 	}
 	return
 }

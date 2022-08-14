@@ -3,10 +3,16 @@ package models
 import "time"
 
 type Overview struct {
-	MonthsOverview []MonthOverview `json:"monthsOverview"`
+	NetworthOverview  []NetworthOverview  `json:"networthOverview"`
+	LiquidityOverview []LiquidityOverview `json:"liquidityOverview"`
 }
 
-type MonthOverview struct {
+type NetworthOverview struct {
 	Date  time.Time `json:"date" bson:"date"`
 	Total float64   `json:"total" bson:"total"`
+}
+
+type LiquidityOverview struct {
+	Date      time.Time `json:"date" bson:"date"`
+	Liquidity float64   `json:"liquidity" bson:"liquidity"`
 }

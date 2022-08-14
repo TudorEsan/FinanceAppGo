@@ -1,12 +1,8 @@
 import React from "react";
 import axios from "../axiosConfig";
-import { INetWorth } from "../types/overview";
+import { INetWorth, IOverview } from "../types/overview";
 
-export const getNetWorthOverviewReq = async (year: number) => {
-  const resp = await axios.get(`/overview/networth`, {
-    params: {
-      year: year,
-    },
-  });
-  return resp.data.records as INetWorth[];
+export const getNetWorthOverviewReq = async () => {
+  const resp = await axios.get(`/overview/networth`);
+  return resp.data.records as IOverview;
 };

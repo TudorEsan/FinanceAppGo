@@ -19,11 +19,11 @@ import {
   Cryptos,
 } from "../../components";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useRecord } from "../../hooks/records/useRecord";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { recordFormSchema } from "../../helpers/validation/recordValidation";
 import { getUtcIso } from "../../helpers/date";
+import { useRecord } from "../../hooks/useRecord";
 
 export const EditRecord = () => {
   const { record, loading, error, updateRecord } = useRecord();

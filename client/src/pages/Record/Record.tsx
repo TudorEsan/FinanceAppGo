@@ -26,7 +26,7 @@ import { MyCard } from "../../components/Cards/MyCard";
 import { MyPie } from "../../components/Charts/PieChart";
 import { formatDate } from "../../helpers/date";
 import { useMobile } from "../../hooks/useMobile";
-import { useRecord } from "../../hooks/records/useRecord";
+import { useRecord } from "../../hooks/useRecord";
 import { ICrypto, IRecord, IStock } from "../../types/record";
 
 interface IStockGridProps {

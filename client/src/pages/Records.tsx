@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDate } from "../helpers/date";
 import { useMobile } from "../hooks/useMobile";
-import { useRecords } from "../hooks/records/useRecords";
+import { useRecords } from "../hooks/useRecords";
 
 const columns: GridColDef[] = [
   // { field: 'id', headerName: 'ID', width: 100 },
@@ -77,7 +77,7 @@ const RecordGrid = () => {
     handlePageChange,
     handlePageSizeChange,
     recordCount,
-		pageSize
+    pageSize,
   } = useRecords();
   const isMobile = useMobile();
   return (
@@ -95,7 +95,7 @@ const RecordGrid = () => {
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
         rowCount={recordCount}
-				sx={{height: (pageSize * 52) + 'px'}}
+        sx={{ height: pageSize * 52 + "px" }}
       />
       {error && (
         <Typography mt={2} variant="body1" color="error">

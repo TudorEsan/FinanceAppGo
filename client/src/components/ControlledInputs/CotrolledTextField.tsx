@@ -9,7 +9,6 @@ interface ControlledTextFieldProps {
   control: any;
   rules?: any;
   disabled?: boolean;
-  autofill?: string;
   type?: string;
 }
 
@@ -20,7 +19,6 @@ export function ControlledTextField({
   defaultValue,
   rules,
   type,
-  autofill,
   ...rest
 }: ControlledTextFieldProps) {
   const textFieldRef = useRef<any>(null);
@@ -29,7 +27,7 @@ export function ControlledTextField({
     <Controller
       control={control}
       name={name}
-      defaultValue={defaultValue || (type === "number" ? 0 : "")}
+      defaultValue={defaultValue}
       rules={rules}
       render={({ field: { onChange, value }, fieldState: { error } }) => {
         return (
@@ -38,20 +36,11 @@ export function ControlledTextField({
               fullWidth
               type={type}
               variant="outlined"
-              autoComplete={autofill || "off"}
               label={label}
               value={value || ""}
-              onInput={ (e: any) => onChange(e.target.value) }
-              onChange={(val) => {
-                // val.target.value =
-                //   type === "number"
-                //     ? parseInt(val.target.value)
-                //     : val.target.value;
-                onChange(val);
-              }}
+              onChange={onChange}
               error={!!error}
               helperText={error?.message}
-
               ref={textFieldRef}
               {...rest}
             />

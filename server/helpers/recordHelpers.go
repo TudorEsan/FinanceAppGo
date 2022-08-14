@@ -37,6 +37,9 @@ func GetRecords(userId primitive.ObjectID, page, limit int) (records []models.Re
 	opt := options.FindOptions{
 		Skip:  &skip,
 		Limit: &l,
+		Sort: bson.M{
+			"date": -1,
+		},
 	}
 	curr, err := RecordCollection.Find(ctx, bson.M{"userId": userId}, &opt)
 	if err != nil {

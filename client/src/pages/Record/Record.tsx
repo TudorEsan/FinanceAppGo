@@ -153,6 +153,7 @@ const DesktopTable = ({ record }: { record: IRecord }) => (
   <>
     <TableHead>
       <TableRow>
+        <TableCell>Total $</TableCell>
         <TableCell>Liquidity</TableCell>
         <TableCell>Invested Amount</TableCell>
         <TableCell>Crypto Value</TableCell>
@@ -161,6 +162,7 @@ const DesktopTable = ({ record }: { record: IRecord }) => (
     </TableHead>
     <TableBody>
       <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+        <TableCell>{record!.investedAmount + record!.liquidity}</TableCell>
         <TableCell>{record!.liquidity} $</TableCell>
         <TableCell>{record!.investedAmount} $</TableCell>
         <TableCell>{record!.cryptosValue} $</TableCell>
@@ -173,6 +175,10 @@ const DesktopTable = ({ record }: { record: IRecord }) => (
 const MobileTable = ({ record }: { record: IRecord }) => (
   <>
     <TableBody>
+      <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+        <TableCell>Total $</TableCell>
+        <TableCell>{record!.investedAmount + record!.liquidity}</TableCell>
+      </TableRow>
       <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
         <TableCell>Invested Amount</TableCell>
         <TableCell>{record!.liquidity} $</TableCell>
@@ -279,9 +285,6 @@ export const Record = () => {
         <Divider sx={{ mt: 1, mb: 1 }} />
         <Typography variant="h6">
           From: {formatDate(record!.data!.date)} $
-        </Typography>
-        <Typography variant="h6" mb={2} gutterBottom>
-          Total: {record!.data!.investedAmount + record!.data!.liquidity} $
         </Typography>
         <Box
           display="flex"

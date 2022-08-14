@@ -56,7 +56,7 @@ func GetRecords(userId primitive.ObjectID, page, limit int) (records []models.Re
 func DeleteRecord(userId, recordId primitive.ObjectID) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	RecordCollection.FindOneAndDelete(ctx, bson.M{"userId": userId})
+	RecordCollection.FindOneAndDelete(ctx, bson.M{"userId": userId, "_id": recordId})
 	return
 }
 

@@ -5,6 +5,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDate } from "../helpers/date";
+import { round } from "../helpers/generalHelpers";
 import { useMobile } from "../hooks/useMobile";
 import { useRecords } from "../hooks/useRecords";
 
@@ -30,6 +31,16 @@ const columns: GridColDef[] = [
         );
       }
       return "error";
+    },
+    flex: 1,
+    editable: false,
+  },
+  {
+    field: "netWorth",
+    headerName: "Total $",
+    renderCell: (rowData: GridRenderCellParams<Date>) => {
+      console.log(rowData);
+      return <>{round(rowData.row.investedAmount + rowData.row.liquidity)}</>;
     },
     flex: 1,
     editable: false,
@@ -61,6 +72,16 @@ const mobileColums = [
     flex: 1,
     editable: false,
   },
+  // {
+  //   field: "netWorth",
+  //   headerName: "Total $",
+  //   renderCell: (rowData: GridRenderCellParams<Date>) => {
+  //     console.log(rowData);
+  //     return <>{round(rowData.row.investedAmount + rowData.row.liquidity)}</>;
+  //   },
+  //   flex: 1,
+  //   editable: false,
+  // },
   {
     field: "investedAmount",
     headerName: "Invested Amount",

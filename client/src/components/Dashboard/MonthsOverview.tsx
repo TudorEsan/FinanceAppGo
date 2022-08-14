@@ -6,12 +6,15 @@ import { LineChart } from "../Charts/LineChart";
 import { Typography } from "@mui/material";
 
 export const RecordOverview = () => {
-  const { netWorth, loading, error, setYear } = useNetworthOverview();
+  const { netWorth, loading, error } = useNetworthOverview();
   if (loading) return <div>Loading...</div>;
   if (error) return <Typography color="error">{error}</Typography>;
   return (
     <>
       <MyCard>
+        <Typography variant="h5" textAlign="center">
+          Net Worth
+        </Typography>
         <LineChart id="months-overview" data={netWorth} />
       </MyCard>
     </>

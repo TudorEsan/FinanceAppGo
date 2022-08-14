@@ -115,7 +115,7 @@ const RecordGrid = () => {
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
         rowCount={recordCount}
-        sx={{ height: pageSize * 52 + "px" }}
+        sx={{ height: (pageSize+2) * 52 + "px" }}
       />
       {error && (
         <Typography mt={2} variant="body1" color="error">

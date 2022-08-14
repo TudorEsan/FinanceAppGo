@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { Datum, ResponsiveLine, Serie } from "@nivo/line";
+import { formatDate } from "../../helpers/date";
 import { useMobile } from "../../hooks/useMobile";
 import { ILinear } from "../../types/overview";
 
@@ -19,6 +20,7 @@ export const LineChart = ({ id, data }: IProps) => {
           colors="#17C6B1"
           // colors={{ scheme: "accent" }}
           yFormat={(d) => d + "$"}
+          xFormat={(d) => String(d).replaceAll("/", "-")}
           data={[serie]}
           margin={{ top: 10, right: 70, bottom: 50, left: 70 }}
           xScale={{ type: "point" }}
@@ -36,6 +38,7 @@ export const LineChart = ({ id, data }: IProps) => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 18,
+            format: (d) => (isMobile ? "" : null),
             legend: "date",
 
             legendOffset: 36,
@@ -50,9 +53,11 @@ export const LineChart = ({ id, data }: IProps) => {
             legendOffset: -50,
             legendPosition: "middle",
           }}
-          pointSize={10}
-          pointColor={{ theme: "background" }}
-          pointBorderWidth={2}
+          pointSize={12}
+          pointColor="rgba(255,255,255,0.8)"
+          pointBorderWidth={3}
+          // point={0}
+          lineWidth={4}
           pointBorderColor={{ from: "serieColor" }}
           pointLabelYOffset={-12}
           useMesh={true}
@@ -83,33 +88,6 @@ export const LineChart = ({ id, data }: IProps) => {
               },
             },
           }}
-          // legends={[
-          //   {
-          //     anchor: "bottom-right",
-          //     itemTextColor: "white",
-          //     direction: "column",
-          //     justify: false,
-          //     translateX: 100,
-          //     translateY: 0,
-          //     itemsSpacing: 0,
-          //     itemDirection: "left-to-right",
-          //     itemWidth: 80,
-          //     itemHeight: 20,
-          //     itemOpacity: 0.75,
-          //     symbolSize: 12,
-          //     symbolShape: "circle",
-          //     symbolBorderColor: "rgba(0, 0, 0, .5)",
-          //     effects: [
-          //       {
-          //         on: "hover",
-          //         style: {
-          //           itemBackground: "rgba(0, 0, 0, .03)",
-          //           itemOpacity: 1,
-          //         },
-          //       },
-          //     ],
-          //   },
-          // ]}
         />
       </Box>
     </>

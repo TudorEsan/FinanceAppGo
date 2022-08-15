@@ -4,7 +4,7 @@ import React from "react";
 import { AuthContext, AuthProvider } from "./context/AuthProvider";
 import { AppRoutes } from "./router/Routes";
 import "./index.css";
-import './axiosConfig'
+import "./axiosConfig";
 
 function App() {
   const { palette } = createTheme();
@@ -33,6 +33,7 @@ function App() {
       MuiCard: {
         styleOverrides: {
           root: {
+            backgroundImage: 'none',
             backgroundColor: "#161616",
             borderRadius: "20px",
           },

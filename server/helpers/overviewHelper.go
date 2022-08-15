@@ -7,13 +7,33 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetCurrentYear() int {
 	return time.Now().Year()
 }
 
-func GetYearRecords(userId primitive.ObjectID, year int) (overview models.Overview, err error) {
+func GetLast2Records(userID primitive.ObjectID) (records []models.Record, err error) {
+	records = make([]models.Record, 0, 2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	curr, err := RecordCollection.Find(ctx, bson.M{"userId": userID}, options.Find().SetSort(bson.M{"date": -1}).SetLimit(2))
+	if err != nil {
+		return
+	}
+	for curr.Next(ctx) {
+		var auxRecord models.Record
+		err = curr.Decode(&auxRecord)
+		if err != nil {
+			return
+		}
+		records = append(records, auxRecord)
+	}
+	return
+}
+
+func GetRecordsOverview(userId primitive.ObjectID, year int) (overview models.Overview, err error) {
 	overview.NetworthOverview = make([]models.NetworthOverview, 0)
 	overview.LiquidityOverview = make([]models.LiquidityOverview, 0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)

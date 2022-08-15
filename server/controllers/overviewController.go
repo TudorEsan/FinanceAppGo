@@ -21,11 +21,18 @@ func GetNetWorthOverview() gin.HandlerFunc {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		records, err := helpers.GetYearRecords(user.ID, year)
+		overview, err := helpers.GetRecordsOverview(user.ID, year)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"records": records})
+		last2Records, err := helpers.GetLast2Records(user.ID)
+		if err != nil {
+			helpers.ReturnError(c, http.StatusBadRequest, err)
+			return
+		}
+		overview.CurrentRecord = last2Records[0]
+		overview.LastRecord = last2Records[1]
+		c.JSON(http.StatusOK, gin.H{"overview": overview})
 	}
 }

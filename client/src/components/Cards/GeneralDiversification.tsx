@@ -1,20 +1,46 @@
+import { Typography } from "@mui/material";
 import React from "react";
-import { IDiversification } from "../../types/record";
+import { round } from "../../helpers/generalHelpers";
+import { IDiversification, IRecord } from "../../types/record";
 import { MyPie } from "../Charts/PieChart";
+import { MyCard } from "./MyCard";
 
-export const GeneralDiversification = () => {
+interface IProps {
+  currentRecord?: IRecord | null;
+}
+
+export const GeneralDiversification = ({ currentRecord }: IProps) => {
+  const total = currentRecord
+    ? currentRecord.stocksValue +
+      currentRecord.liquidity +
+      currentRecord.cryptosValue
+    : 1;
+  if (!currentRecord) return null;
+  console.log(currentRecord);
   return (
-    <MyPie
-      data={
-        [
-          { symbol: "1", percent: 40 },
-          { symbol: "2", percent: 20 },
-          { symbol: "3", percent: 20 },
-          { symbol: "4", percent: 5 },
-          { symbol: "5", percent: 10 },
-          { symbol: "6", percent: 1 },
-        ] as IDiversification[]
-      }
-    />
+    <MyCard >
+      <Typography variant="h5" textAlign="center">
+        Diversification
+      </Typography>
+      <MyPie
+        enableArcLinkLabels={false}
+        data={
+          [
+            {
+              symbol: "Stocks",
+              percent: round((currentRecord.stocksValue / total) * 100),
+            },
+            {
+              symbol: "Crypto",
+              percent: round((currentRecord.cryptosValue / total) * 100),
+            },
+            {
+              symbol: "Liquidity",
+              percent: round((currentRecord.liquidity / total) * 100),
+            },
+          ] as IDiversification[]
+        }
+      />
+    </MyCard>
   );
 };

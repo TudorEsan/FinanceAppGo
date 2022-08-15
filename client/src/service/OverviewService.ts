@@ -4,5 +4,5 @@ import { INetWorth, IOverview } from "../types/overview";
 
 export const getNetWorthOverviewReq = async () => {
   const resp = await axios.get(`/overview/networth`);
-  return resp.data.records as IOverview;
+  return resp.data.overview as IOverview;
 };

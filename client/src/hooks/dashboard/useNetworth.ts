@@ -5,12 +5,16 @@ import { getErrorMessage } from "../../helpers/errors";
 import { getNetWorthOverviewReq } from "../../service/OverviewService";
 import { ILinear, ILiquidity, INetWorth } from "../../types/overview";
 import { format } from "date-fns";
+import { IRecord } from "../../types/record";
 
 export const useNetworthOverview = () => {
   const [netWorth, setNetWorth] = React.useState<Datum[]>([]);
   const [liquidity, setLiquidity] = React.useState<Datum[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [currentRecord, setCurrentRecord] = React.useState<IRecord | null>(null);
+  const [lastRecord, setLastRecord] = React.useState<IRecord | null>(null);
+
 
   const formatOverview = (overview: INetWorth[]) => {
     return overview.map((item: INetWorth, index) => {
@@ -35,6 +39,8 @@ export const useNetworthOverview = () => {
       const overview = await getNetWorthOverviewReq();
       setNetWorth(formatOverview(overview.networthOverview));
       setLiquidity(formatLiquidity(overview.liquidityOverview))
+      setCurrentRecord(overview.currentRecord);
+      setLastRecord(overview.lastRecord);
     } catch (error) {
       setError(getErrorMessage(error));
     }
@@ -44,5 +50,5 @@ export const useNetworthOverview = () => {
     getNetWorth();
   }, []);
 
-  return { netWorth, loading, error, liquidity};
+  return { netWorth, loading, error, liquidity, currentRecord, lastRecord};
 };

@@ -16,4 +16,6 @@ export interface ILiquidity {
 export interface IOverview {
   liquidityOverview: ILiquidity[];
   networthOverview: INetWorth[];
+  lastRecord?: IRecord;
+  currentRecord?: IRecord;
 }

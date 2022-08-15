@@ -8,8 +8,8 @@ interface IMyCardProps {
 
 export const MyCard = ({ children, rest }: IMyCardProps) => {
   return (
-    <Card elevation={7} sx={{ mt: 2, mb: 2 }}>
-      <CardContent>{children}</CardContent>
+    <Card elevation={7} sx={{ height: "100%" }} {...rest}>
+      <CardContent sx={{ height: "100%" }}>{children}</CardContent>
     </Card>
   );
 };

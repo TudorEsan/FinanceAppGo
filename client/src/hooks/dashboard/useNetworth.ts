@@ -10,7 +10,7 @@ import { IRecord } from "../../types/record";
 export const useNetworthOverview = () => {
   const [netWorth, setNetWorth] = React.useState<Datum[]>([]);
   const [liquidity, setLiquidity] = React.useState<Datum[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [currentRecord, setCurrentRecord] = React.useState<IRecord | null>(null);
   const [lastRecord, setLastRecord] = React.useState<IRecord | null>(null);

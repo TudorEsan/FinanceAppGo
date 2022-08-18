@@ -6,6 +6,13 @@ const roundPercent = (value: number, decimals: number) => {
   );
 };
 
+export const getTotalNetWorth = (record?: IRecord | null) => {
+  if (!record) {
+    return 0;
+  }
+  return record.liquidity + record.investedAmount;
+};
+
 export const getDiversification = (record: IRecord) => {
   const diversification = [];
   const total = record.stocksValue + record.cryptosValue + record.liquidity;

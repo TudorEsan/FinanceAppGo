@@ -4,6 +4,12 @@ import React from "react";
 import { IRecord } from "../../types/record";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { MyCard } from "../Cards/MyCard";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import { formatDate } from "../../helpers/date";
+import { getTotalNetWorth } from "../../helpers/recordHelper";
+import { round } from "../../helpers/generalHelpers";
+
 interface IProps {
   lastRecord?: IRecord | null;
   currentRecord?: IRecord | null;
@@ -14,6 +20,7 @@ interface IItemContentProps {
   upBy: number;
   value: number;
   icon: React.ReactNode;
+  since: Date;
 }
 const ItemContent = ({
   title,
@@ -21,6 +28,7 @@ const ItemContent = ({
   upBy,
   value,
   icon,
+  since,
 }: IItemContentProps) => {
   return (
     <Grid container spacing={0.5} padding={1}>
@@ -35,19 +43,34 @@ const ItemContent = ({
       <Grid item xs={12}>
         <Typography fontSize="1.5rem">$ {value}</Typography>
       </Grid>
-      <Grid container item xs={12}>
+      <Grid container item xs={12} spacing={2}>
         <Grid item>
-          <Typography color="textPrimary">{upByPercent}%</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {upByPercent >= 0 ? (
+              <TrendingUpIcon color="success" />
+            ) : (
+              <TrendingDownIcon color="error" />
+            )}
+            <Typography color="textPrimary">
+              {(upBy >= 0 ? "+" : "-") + upByPercent}%
+            </Typography>
+          </Box>
         </Grid>
         <Grid item>
-          <Typography color="textPrimary">{upBy}</Typography>
+          <Typography color="gray">
+            {(upBy >= 0 ? "+" : "-") + `${String(upBy)} $`}
+          </Typography>
         </Grid>
+      </Grid>
+      <Grid item>
+        <Typography color="gray">Since {formatDate(since)}</Typography>
       </Grid>
     </Grid>
   );
 };
 
 export const OverviewHeader = ({ lastRecord, currentRecord }: IProps) => {
+  console.log(lastRecord, currentRecord);
   return (
     <MyCard>
       <ItemContent
@@ -63,9 +86,16 @@ export const OverviewHeader = ({ lastRecord, currentRecord }: IProps) => {
             }}
           />
         }
-        upByPercent={0}
-        upBy={0}
-        value={0}
+        since={lastRecord!.date}
+        upByPercent={round(
+          (getTotalNetWorth(currentRecord) * 100) /
+            getTotalNetWorth(lastRecord) -
+            100
+        )}
+        upBy={round(
+          getTotalNetWorth(currentRecord) - getTotalNetWorth(lastRecord)
+        )}
+        value={round(getTotalNetWorth(currentRecord))}
       />
     </MyCard>
   );

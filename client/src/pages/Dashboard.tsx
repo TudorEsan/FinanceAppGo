@@ -11,6 +11,9 @@ export const Dashboard = () => {
   if (loading) {
     return <CircularProgress />;
   }
+  if (error !== null) {
+    return <Typography color="error">{error}</Typography>;
+  }
   return (
     <>
       <Grid container spacing={3}>

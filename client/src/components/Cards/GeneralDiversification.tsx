@@ -1,4 +1,5 @@
 import { Typography } from "@mui/material";
+import { Box } from "@mui/system";
 import React from "react";
 import { round } from "../../helpers/generalHelpers";
 import { IDiversification, IRecord } from "../../types/record";
@@ -18,11 +19,12 @@ export const GeneralDiversification = ({ currentRecord }: IProps) => {
   if (!currentRecord) return null;
   console.log(currentRecord);
   return (
-    <MyCard >
-      <Typography variant="h5" textAlign="center">
+    <MyCard>
+      <Typography gutterBottom variant="h5" textAlign="center">
         Diversification
       </Typography>
       <MyPie
+        showLegend
         enableArcLinkLabels={false}
         data={
           [

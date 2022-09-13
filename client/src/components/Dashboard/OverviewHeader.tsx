@@ -9,6 +9,7 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import { formatDate } from "../../helpers/date";
 import { getTotalNetWorth } from "../../helpers/recordHelper";
 import { round } from "../../helpers/generalHelpers";
+import { Money } from "@mui/icons-material";
 
 interface IProps {
   lastRecord?: IRecord | null;
@@ -52,13 +53,13 @@ const ItemContent = ({
               <TrendingDownIcon color="error" />
             )}
             <Typography color="textPrimary">
-              {(upBy >= 0 ? "+" : "-") + upByPercent}%
+              {(upBy >= 0 ? "+" : "") + upByPercent}%
             </Typography>
           </Box>
         </Grid>
         <Grid item>
           <Typography color="gray">
-            {(upBy >= 0 ? "+" : "-") + `${String(upBy)} $`}
+            {(upBy >= 0 ? "+" : "") + `${String(upBy)} $`}
           </Typography>
         </Grid>
       </Grid>
@@ -70,33 +71,60 @@ const ItemContent = ({
 };
 
 export const OverviewHeader = ({ lastRecord, currentRecord }: IProps) => {
-  console.log(lastRecord, currentRecord);
   return (
-    <MyCard>
-      <ItemContent
-        title="Net Worth"
-        icon={
-          <AttachMoneyIcon
-            color="primary"
-            sx={{
-              fontSize: "50px",
-              background: "#252525",
-              borderRadius: "50%",
-              padding: 1,
-            }}
+    <Grid item container xs={12} spacing={2}>
+      <Grid item md={6} xs={12}>
+        <MyCard>
+          <ItemContent
+            title="Net Worth"
+            icon={
+              <AttachMoneyIcon
+                color="primary"
+                sx={{
+                  fontSize: "50px",
+                  background: "#252525",
+                  borderRadius: "50%",
+                  padding: 1,
+                }}
+              />
+            }
+            since={lastRecord!.date}
+            upByPercent={round(
+              (getTotalNetWorth(currentRecord) * 100) /
+                getTotalNetWorth(lastRecord) -
+                100
+            )}
+            upBy={round(
+              getTotalNetWorth(currentRecord) - getTotalNetWorth(lastRecord)
+            )}
+            value={round(getTotalNetWorth(currentRecord))}
           />
-        }
-        since={lastRecord!.date}
-        upByPercent={round(
-          (getTotalNetWorth(currentRecord) * 100) /
-            getTotalNetWorth(lastRecord) -
-            100
-        )}
-        upBy={round(
-          getTotalNetWorth(currentRecord) - getTotalNetWorth(lastRecord)
-        )}
-        value={round(getTotalNetWorth(currentRecord))}
-      />
-    </MyCard>
+        </MyCard>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <MyCard>
+          <ItemContent
+            title="Liquidity"
+            icon={
+              <Money
+                color="primary"
+                sx={{
+                  fontSize: "50px",
+                  background: "#252525",
+                  borderRadius: "50%",
+                  padding: 1,
+                }}
+              />
+            }
+            since={lastRecord!.date}
+            upByPercent={round(
+              (currentRecord!.liquidity * 100) / lastRecord!.liquidity - 100
+            )}
+            upBy={currentRecord!.liquidity - lastRecord!.liquidity}
+            value={currentRecord!.liquidity}
+          />
+        </MyCard>
+      </Grid>
+    </Grid>
   );
 };

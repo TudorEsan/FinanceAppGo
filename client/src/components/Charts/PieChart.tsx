@@ -21,11 +21,10 @@ export const MyPie = ({
   return (
     <Box
       height={isMobile ? 250 : 300}
-      // width="100%"
+      width="100%"
       maxWidth={400}
       margin="auto"
     >
-      {/* <p>tf is thiz</p> */}
       <ResponsivePie
         colors={{ scheme: "dark2" }}
         value="percent"
@@ -51,7 +50,7 @@ export const MyPie = ({
         data={data}
         margin={
           enableArcLinkLabels
-            ? { right: 90, left: 90, bottom: 90 }
+            ? { right: 70, left: 70, bottom: 40, top: 40 }
             : { right: 0, left: 0, bottom: 90 }
         }
         innerRadius={0.5}

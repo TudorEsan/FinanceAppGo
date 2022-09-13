@@ -17,12 +17,7 @@ export const Dashboard = () => {
   return (
     <>
       <Grid container spacing={3}>
-        <Grid item xs={6}>
-          <OverviewHeader
-            currentRecord={currentRecord}
-            lastRecord={lastRecord}
-          />
-        </Grid>
+        <OverviewHeader currentRecord={currentRecord} lastRecord={lastRecord} />
         <Grid item md={8} xs={12}>
           <CardLineChart
             data={netWorth}

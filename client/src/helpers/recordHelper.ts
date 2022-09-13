@@ -18,15 +18,16 @@ export const getDiversification = (record: IRecord) => {
   const total = record.stocksValue + record.cryptosValue + record.liquidity;
   diversification.push({
     symbol: "Liquidity",
-    percent: roundPercent(record.liquidity / total, 2),
+    percent: roundPercent(record.liquidity / total, 3),
   });
   diversification.push({
     symbol: "Stocks",
-    percent: roundPercent(record.stocksValue / total, 2),
+    percent: roundPercent(record.stocksValue / total, 3),
   });
   diversification.push({
     symbol: "Cryptos",
-    percent: roundPercent(record.cryptosValue / total, 2),
+    percent: roundPercent(record.cryptosValue / total, 3),
   });
+  console.log(diversification);
   return diversification;
 };

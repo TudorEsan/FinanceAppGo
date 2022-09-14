@@ -25,13 +25,13 @@ func DbInstace() *mongo.Client {
 	if !ok {
 		panic("MONGO_URL not set")
 	}
-	client, error := mongo.NewClient(options.Client().ApplyURI(url))
-	if error != nil {
-		log.Fatal(error)
+	client, err := mongo.NewClient(options.Client().ApplyURI(url))
+	if err != nil {
+		log.Fatal(err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err := client.Connect(ctx)
+	err = client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

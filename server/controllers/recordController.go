@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"App/database"
-	"App/helpers"
-	"App/models"
+	"github.com/TudorEsan/FinanceAppGo/server/database"
+	"github.com/TudorEsan/FinanceAppGo/server/helpers"
+	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"fmt"
 	"net/http"
 	"strconv"

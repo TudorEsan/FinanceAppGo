@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	"App/database"
-	"App/models"
+	"github.com/TudorEsan/FinanceAppGo/server/database"
+	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"context"
 	"errors"
 	"fmt"
@@ -60,6 +60,7 @@ func ValidUsername(username string) error {
 }
 
 func CheckPassword(dbUser models.User, user models.User) (err error) {
+	fmt.Println("INSIDE COMPARE AND HASH")
 	err = bcrypt.CompareHashAndPassword([]byte(*dbUser.Password), []byte(*user.Password))
 	if err != nil {
 		return errors.New("credentials are not good")

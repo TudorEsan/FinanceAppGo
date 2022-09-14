@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"App/helpers"
+	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"fmt"
 	"net/http"
 

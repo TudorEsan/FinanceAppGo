@@ -7,6 +7,7 @@ import (
 	"App/models"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -28,6 +29,7 @@ var validate = validator.New()
 func Signup() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+		fmt.Print("signup")
 		defer cancel()
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
@@ -39,18 +41,22 @@ func Signup() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": validationErr.Error()})
 			return
 		}
+		fmt.Println("befor valid username")
 		err := helper.ValidUsername(*user.Username)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		user.CreateDate, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.ID = primitive.NewObjectID()
+		fmt.Println("befor hash password")
 		hashedPassw, _ := helper.HashPassword(*user.Password)
 		*user.Password = hashedPassw
+		fmt.Println("before generate tokens")
 		jwt, refreshToken, _ := helper.GenerateTokens(user)
 		user.RefreshToken = &refreshToken
+		fmt.Println("before insert user")
 		_, err = userCollection.InsertOne(ctx, user)
+		fmt.Println("after insert user")
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

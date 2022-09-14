@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -22,26 +21,17 @@ func isInReleaseMode() bool {
 
 func DbInstace() *mongo.Client {
 
-	envs, err := godotenv.Read(".env")
-	if err != nil {
-		log.Fatal("no .env")
+	url, ok := os.LookupEnv("MONGO_URL")
+	if !ok {
+		panic("MONGO_URL not set")
 	}
-	var mongoUrl string
-	if isInReleaseMode() {
-		mongoUrl = envs["MONGO_REALEASE_URL"]
-	} else {
-		mongoUrl = envs["MONGO_URL"]
-	}
-	if mongoUrl == "" {
-		panic("Credentials not found")
-	}
-	client, error := mongo.NewClient(options.Client().ApplyURI(mongoUrl))
+	client, error := mongo.NewClient(options.Client().ApplyURI(url))
 	if error != nil {
 		log.Fatal(error)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err = client.Connect(ctx)
+	err := client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

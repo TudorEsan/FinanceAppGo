@@ -47,7 +47,9 @@ func HashPassword(password string) (string, error) {
 func ValidUsername(username string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
+	fmt.Println("username: ", username)
 	count, err := userCollection.CountDocuments(ctx, bson.M{"username": username})
+	fmt.Println("count: ", count)
 	if err != nil {
 		return err
 	}

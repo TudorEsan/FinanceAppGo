@@ -16,6 +16,8 @@ func main() {
 	}
 	router := gin.Default()
 	config := cors.DefaultConfig()
+	config.AllowCredentials = true
+	config.AllowOrigins = []string{"*"}
 
 	// cors config
 	config.AllowOrigins = []string{"http://localhost:3000"}

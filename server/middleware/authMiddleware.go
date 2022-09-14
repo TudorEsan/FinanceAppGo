@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"App/helpers"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ func VerifyAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var userId string
 		token, err := c.Cookie("token")
+		fmt.Println("token", token)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusUnauthorized, err)
 			helpers.RemoveCookies(c)

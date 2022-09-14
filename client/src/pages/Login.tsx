@@ -26,7 +26,6 @@ export const Login = () => {
       password: "",
     },
   });
-  console.log(errors);
 
   const handleLogin = (data: LoginInput) => {
     login(data.username, data.password);

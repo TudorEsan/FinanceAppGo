@@ -2,7 +2,6 @@ package main
 
 import (
 	"App/routes"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"
@@ -10,11 +9,15 @@ import (
 )
 
 func main() {
-	port := os.Getenv("8080")
-	if port == "" {
-		port = "8080"
-	}
+	// port := os.Getenv("8080")
+	// if port == "" {
+	// 	port = "8080"
+	// }
 	router := gin.Default()
+	
+	// react app
+	router.Use(static.Serve("/", static.LocalFile("./web", true)))
+
 	config := cors.DefaultConfig()
 	config.AllowCredentials = true
 	config.AllowOrigins = []string{"*"}
@@ -23,11 +26,13 @@ func main() {
 	config.AllowOrigins = []string{"http://localhost:3000"}
 	router.Use(cors.New(config))
 
-	// serve react app
-	router.Use(static.Serve("/", static.LocalFile("./web", true)))
-
 	// routes
 	api := router.Group("/api")
+	api.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 	overviewRoutes := api.Group("/overview")
 	netWorthRoutes := api.Group("records")
 	authRoutes := api.Group("auth")

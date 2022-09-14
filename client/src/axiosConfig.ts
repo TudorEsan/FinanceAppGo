@@ -1,11 +1,10 @@
 import plainAxios from "axios";
 import { deleteAllCookies } from "./helpers/authHelper";
 
-const inDevelopment = process.env.NODE_ENV === "development";
-
 const axios = plainAxios.create({
+  baseURL: '/api',
   withCredentials: true,
-  timeout: 5000,
+  timeout: 20000,
 });
 
 axios.interceptors.response.use(

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"App/routes"
+	"github.com/TudorEsan/FinanceAppGo/server/routes"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"

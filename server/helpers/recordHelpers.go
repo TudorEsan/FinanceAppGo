@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	"App/database"
-	"App/models"
+	"github.com/TudorEsan/FinanceAppGo/server/database"
+	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"context"
 	"fmt"
 	"time"

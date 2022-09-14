@@ -1,8 +1,8 @@
 package routes
 
 import (
-	controller "App/controllers"
-	"App/middleware"
+	controller "github.com/TudorEsan/FinanceAppGo/server/controllers"
+	"github.com/TudorEsan/FinanceAppGo/server/middleware"
 
 	"github.com/gin-gonic/gin"
 )

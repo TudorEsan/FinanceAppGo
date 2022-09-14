@@ -1,25 +1,25 @@
-FROM node:18.7 as build 
+# FROM node:18.7 as build 
 
 
-WORKDIR /react-app
+# WORKDIR /react-app
 
 
-COPY package*.json .
+# COPY package*.json .
 
 
-RUN npm install
+# RUN npm install
 
 
-COPY . .
+# COPY . .
 
 
-RUN npm run build
+# RUN npm run build
 
 
-FROM nginx:1.19
+# FROM nginx:1.19
 
 
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+# COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
 
-COPY --from=build /react-app/build /usr/share/nginx/html
+# COPY --from=build /react-app/build /usr/share/nginx/html

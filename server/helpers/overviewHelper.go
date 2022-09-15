@@ -1,9 +1,10 @@
 package helpers
 
 import (
-	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"context"
 	"time"
+
+	"github.com/TudorEsan/FinanceAppGo/server/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,7 +34,7 @@ func GetLast2Records(userID primitive.ObjectID) (records []models.Record, err er
 	return
 }
 
-func GetRecordsOverview(userId primitive.ObjectID, year int) (overview models.Overview, err error) {
+func GetRecordsOverview(userId primitive.ObjectID, limit int) (overview models.Overview, err error) {
 	overview.NetworthOverview = make([]models.NetworthOverview, 0)
 	overview.LiquidityOverview = make([]models.LiquidityOverview, 0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
@@ -41,16 +42,13 @@ func GetRecordsOverview(userId primitive.ObjectID, year int) (overview models.Ov
 	curr, err := RecordCollection.Aggregate(ctx, bson.A{
 		bson.M{
 			"$match": bson.M{
-				"date": bson.M{
-					"$gte": time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
-				},
 				"userId": bson.M{
 					"$eq": userId,
 				},
 			},
 		},
 		bson.M{
-			"$limit": 10,
+			"$limit": limit,
 		},
 		bson.M{
 			"$sort": bson.M{

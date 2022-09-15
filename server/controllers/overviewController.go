@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/TudorEsan/FinanceAppGo/server/helpers"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,16 +11,17 @@ import (
 func GetNetWorthOverview() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := helpers.GetUserFromContext(c)
+		limit := c.DefaultQuery("limit", "10")
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		year, err := strconv.Atoi(c.DefaultQuery("year", fmt.Sprint(helpers.GetCurrentYear())))
+		limitInt, err := strconv.Atoi(limit)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return
 		}
-		overview, err := helpers.GetRecordsOverview(user.ID, year)
+		overview, err := helpers.GetRecordsOverview(user.ID, limitInt)
 		if err != nil {
 			helpers.ReturnError(c, http.StatusBadRequest, err)
 			return

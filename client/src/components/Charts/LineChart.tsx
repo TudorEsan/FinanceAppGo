@@ -87,6 +87,12 @@ export const LineChart = ({ id, data }: IProps) => {
                 },
               },
             },
+            grid: {
+              line: {
+                stroke: "rgba(255, 255, 255, 0.2)",
+                strokeWidth: 1,
+              },
+            },
           }}
         />
       </Box>

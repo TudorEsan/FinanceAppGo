@@ -1,36 +1,38 @@
 package controller
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/TudorEsan/FinanceAppGo/server/database"
 	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"github.com/TudorEsan/FinanceAppGo/server/models"
-	"fmt"
-	"net/http"
-	"strconv"
+	"github.com/hashicorp/go-hclog"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var NetWorthCollection *mongo.Collection = database.OpenCollection(database.Client, "NetWorth")
-var InfoCollection *mongo.Collection = database.OpenCollection(database.Client, "Info")
-
-func InitNetWort() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-	}
+type RecordController struct {
+	l                hclog.Logger
+	recordCollection *mongo.Collection
 }
 
-func GetRecord() gin.HandlerFunc {
+func NewRecordController(l hclog.Logger, client *mongo.Client) *RecordController {
+	recordCollection := database.OpenCollection(client, "records")
+	return &RecordController{l, recordCollection}
+}
+
+func (cc *RecordController) GetRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		record, err := helpers.GetRecord(user.ID, id)
+		record, err := helpers.GetRecord(cc.recordCollection, user.ID, id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -40,25 +42,25 @@ func GetRecord() gin.HandlerFunc {
 	}
 }
 
-func AddRecord() gin.HandlerFunc {
+func (cc *RecordController) AddRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var recordBody models.Record
 		if err := c.BindJSON(&recordBody); err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		if err := validate.Struct(recordBody); err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		err = helpers.AddRecord(user.ID, recordBody)
+		err = helpers.AddRecord(cc.recordCollection, user.ID, recordBody)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
@@ -67,26 +69,26 @@ func AddRecord() gin.HandlerFunc {
 	}
 }
 
-func GetRecords() gin.HandlerFunc {
+func (cc *RecordController) GetRecords() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		page, err := strconv.Atoi(c.DefaultQuery("page", "0"))
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		perPage, err := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		records, err := helpers.GetRecords(user.ID, int(page), perPage)
+		records, err := helpers.GetRecords(cc.recordCollection, user.ID, int(page), perPage)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"records": records})
@@ -94,72 +96,73 @@ func GetRecords() gin.HandlerFunc {
 	}
 }
 
-func GetRecordCount() gin.HandlerFunc {
+func (cc *RecordController) GetRecordCount() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		count, err := helpers.GetRecordCount(user.ID)
+		count, err := helpers.GetRecordCount(cc.recordCollection, user.ID)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"recordCount": count})
 	}
 }
 
-func DeleteRecord() gin.HandlerFunc {
+func (cc *RecordController) DeleteRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 
 		id := c.Param("id")
 		if id == "" {
-			helpers.ReturnError(c, http.StatusBadRequest, fmt.Errorf("ID is required"))
+			c.JSON(http.StatusBadRequest, gin.H{"message": "id is required"})
 			return
 		}
 
 		netWorthId, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		}
-		err = helpers.DeleteRecord(user.ID, netWorthId)
+		err = helpers.DeleteRecord(cc.recordCollection, user.ID, netWorthId)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 	}
 }
 
-func UpdateRecord() gin.HandlerFunc {
+func (cc *RecordController) UpdateRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := helpers.GetUserFromContext(c)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		id := c.Param("id")
 		if id == "" {
-			helpers.ReturnError(c, http.StatusBadRequest, fmt.Errorf("ID is required"))
+			c.JSON(http.StatusBadRequest, gin.H{"message": "id is required"})
 			return
 		}
 		var recordBody models.Record
 		if err := c.BindJSON(&recordBody); err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		if err := validate.Struct(recordBody); err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		err = helpers.UpdateRecord(user.ID, recordBody)
+		err = helpers.UpdateRecord(cc.recordCollection, user.ID, recordBody)
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "Updated"})
 	}

@@ -22,7 +22,7 @@ type EmailVerificationToken struct {
 }
 
 func getSecretKey() []byte {
-	secret, ok := os.LookupEnv("SECRET_KEY")
+	secret, ok := os.LookupEnv("JWT_SECRET")
 	if !ok {
 		panic("SECRET_KEY not found")
 	}

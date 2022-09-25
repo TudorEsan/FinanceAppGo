@@ -36,8 +36,8 @@ func main() {
 	netWorthRoutes := api.Group("records")
 	authRoutes := api.Group("auth")
 	routes.AuthRoutes(authRoutes, l, client)
-	routes.OverviewRoutes(overviewRoutes, l)
-	routes.NetWorthRoutes(netWorthRoutes)
+	routes.OverviewRoutes(overviewRoutes, l, client)
+	routes.NetWorthRoutes(netWorthRoutes, client, l)
 
 	// Start server
 	router.Run()

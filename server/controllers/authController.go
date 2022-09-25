@@ -3,12 +3,12 @@ package controller
 // func Signup
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/TudorEsan/FinanceAppGo/server/customValidators"
 	"github.com/TudorEsan/FinanceAppGo/server/database"
+	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	helper "github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"github.com/hashicorp/go-hclog"
@@ -16,7 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -35,26 +34,31 @@ func NewAuthController(l hclog.Logger, client *mongo.Client) *AuthController {
 	return &AuthController{ll, collection}
 }
 
-func (cc *AuthController) SignupHandler() gin.HandlerFunc {
+func (controller *AuthController) saveUser(ctx context.Context, user models.User) error {
+	_, err := controller.userCollection.InsertOne(ctx, user)
+	return err
+}
+
+func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 		defer cancel()
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			cc.l.Error("Could not bind", err)
+			controller.l.Error("Could not bind", err)
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error(), "body": c.Request.Body})
 			return
 		}
 		// check if username is not present in the database
-		err := helper.ValidUsername(ctx, cc.userCollection, *user.Username)
+		err := helper.ValidUsername(ctx, controller.userCollection, *user.Username)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 
 		// apply logic to the user, hash password, add creation date
-		userForDb, err := helper.GetUserForDb(cc.userCollection, user)
+		userForDb, err := helper.GetUserForDb(user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
@@ -124,7 +128,7 @@ func (controller *AuthController) RefreshTokensHandler() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := sharedvalidators.ValidateToken(refreshToken)
+		claims, err := customValidators.ValidateToken(refreshToken)
 		if err != nil {
 			controller.l.Error("Invalid Refresh Token")
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "invalid refresh token"})

@@ -1,30 +1,17 @@
 package helpers
 
 import (
-	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
-
-func GetUser(userId string) (models.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
-	var user models.User
-	defer cancel()
-	id, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return models.User{}, err
-	}
-	err = userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
-	if err != nil {
-		return models.User{}, err
-	}
-	return user, nil
-}
 
 func GetUserFromContext(c *gin.Context) (user models.User, err error) {
 	userAny, exists := c.Get("user")
@@ -38,4 +25,40 @@ func GetUserFromContext(c *gin.Context) (user models.User, err error) {
 		return
 	}
 	return
+}
+
+func GetUserForDb(user models.User) (models.User, error) {
+	// formats user to be passed to the db
+	user.CreateDate, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	user.ID = primitive.NewObjectID()
+	hashedPassw, err := HashPassword(*user.Password)
+	if err != nil {
+		return models.User{}, err
+	}
+	*user.Password = hashedPassw
+	return user, nil
+}
+
+func GetUser(userCollection *mongo.Collection, id string) (user models.User, err error) {
+	userId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	err = userCollection.FindOne(ctx, bson.M{"_id": userId}).Decode(&user)
+	if err != nil {
+		return user, fmt.Errorf("could not find user in the db")
+	}
+	return
+}
+
+func VerifyUserEmail(userCollection *mongo.Collection, id primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	_, err := userCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"emailVerified": true}})
+	if err != nil {
+		return err
+	}
+	return nil
 }

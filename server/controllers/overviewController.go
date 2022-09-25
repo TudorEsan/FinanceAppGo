@@ -1,14 +1,25 @@
 package controller
 
 import (
-	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"net/http"
 	"strconv"
+
+	"github.com/TudorEsan/FinanceAppGo/server/helpers"
+	"github.com/hashicorp/go-hclog"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetNetWorthOverview() gin.HandlerFunc {
+type OverviewController struct {
+	l hclog.Logger
+}
+
+func NewOverviewController(l hclog.Logger) *OverviewController {
+	ll := l.Named("OverviewController")
+	return &OverviewController{ll}
+}
+
+func (c *OverviewController) GetNetWorthOverview() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := helpers.GetUserFromContext(c)
 		limit := c.DefaultQuery("limit", "10")

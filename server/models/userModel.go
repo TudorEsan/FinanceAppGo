@@ -9,7 +9,7 @@ import (
 
 type UserLoginForm struct {
 	Username string `json:"username" validate:"required,min=3,max=20"`
-	Password string `json:"password" validate:"required,min=8,max=20"`
+	Password *string `json:"password" validate:"required,min=8,max=20"`
 }
 type User struct {
 	ID           primitive.ObjectID `bson:"_id" json:"id"`
@@ -23,3 +23,4 @@ type User struct {
 func (user User) String() string {
 	return fmt.Sprintf("USER:\nID: %s\n username: %s\n email: %s\n refreshToken: %s\n", user.ID.Hex(), *user.Username, *user.Email, *user.RefreshToken)
 }
+

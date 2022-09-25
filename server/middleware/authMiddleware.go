@@ -1,68 +1,58 @@
-package middleware
+package middlewares
 
 import (
-	"github.com/TudorEsan/FinanceAppGo/server/helpers"
-	"fmt"
 	"net/http"
 
+	"github.com/TudorEsan/FinanceAppGo/server/customErrors"
+	"github.com/TudorEsan/FinanceAppGo/server/customValidators"
 	"github.com/gin-gonic/gin"
 )
 
+func RemoveCookies(c *gin.Context) {
+	c.SetCookie("token", "", 60*60*24*30, "", "", false, false)
+	c.SetCookie("refreshToken", "", 60*60*24*30, "", "", false, false)
+}
+
 func VerifyAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var userId string
-		token, err := c.Cookie("token")
-		fmt.Println("token", token)
-		if err != nil {
-			helpers.ReturnError(c, http.StatusUnauthorized, err)
-			helpers.RemoveCookies(c)
-			c.Abort()
-			return
-		}
-		claims, err := helpers.ValidateToken(token)
-		if err != nil && err.Error() != "token expired" {
-			helpers.ReturnError(c, http.StatusUnauthorized, err)
-			helpers.RemoveCookies(c)
-			c.Abort()
-			return
-		}
-		if err != nil && err.Error() == "token expired" {
-			refreshToken, err := c.Cookie("refreshToken")
-			if err != nil {
-				helpers.ReturnError(c, http.StatusUnauthorized, err)
-				helpers.RemoveCookies(c)
-				c.Abort()
-				return
-			}
-			user, err := helpers.ValidateRefreshToken(refreshToken)
-			if err != nil {
-				helpers.ReturnError(c, http.StatusUnauthorized, err)
-				helpers.RemoveCookies(c)
-				c.Abort()
-				return
-			}
-			userId = user.ID.Hex()
 
-		} else {
-			userId = claims.Id
-		}
-		user, err := helpers.GetUser(userId)
+		// Check if token exists
+		token, err := c.Cookie("token")
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Token Not Found"})
+			RemoveCookies(c)
 			c.Abort()
 			return
 		}
-		newToken, newRefreshToken, err := helpers.GenerateTokens(user)
+		// Check if Refresh Token exists
+		_, err = c.Cookie("refreshToken")
 		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Refresh Token Not Found"})
+			RemoveCookies(c)
 			c.Abort()
 			return
 		}
-		user, err = helpers.UpdateTokens(c, newToken, newRefreshToken, user.ID.Hex())
-		if err != nil {
-			helpers.ReturnError(c, http.StatusBadRequest, err)
+
+		// Validate Token
+		claims, err := customValidators.ValidateToken(token)
+		switch e := err.(type) {
+
+		case nil:
+			// token ok -> user authorized
+			c.Set("UserId", claims.Id)
+			c.Next()
+			return
+			
+		case *customErrors.ExpiredToken:
+			// Token expired -> client should refresh the tokens
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "token expired"})
+			c.Abort()
+			return
+		default:
+			// Token invalid or any other error-> reject Request
+			c.JSON(http.StatusUnauthorized, customErrors.GetJsonError(e))
+			c.Abort()
+			return
 		}
-		c.Set("user", user)
-		c.Next()
 	}
 }

@@ -39,8 +39,6 @@ func DbInstace() *mongo.Client {
 	return client
 }
 
-var Client *mongo.Client = DbInstace()
-
 func OpenCollection(client *mongo.Client, collenctionName string) *mongo.Collection {
 	collection := client.Database("Cluster0").Collection(collenctionName)
 	return collection

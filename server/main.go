@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/TudorEsan/FinanceAppGo/server/database"
 	"github.com/TudorEsan/FinanceAppGo/server/routes"
+	"github.com/hashicorp/go-hclog"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"
@@ -9,21 +11,18 @@ import (
 )
 
 func main() {
-	// port := os.Getenv("8080")
-	// if port == "" {
-	// 	port = "8080"
-	// }
+	// dependencies
 	router := gin.Default()
-	
+	l := hclog.Default()
+	client := database.DbInstace()
+
 	// react app
 	router.Use(static.Serve("/", static.LocalFile("./web", true)))
 
+	// cors config
 	config := cors.DefaultConfig()
 	config.AllowCredentials = true
 	config.AllowOrigins = []string{"*"}
-
-	// cors config
-	config.AllowOrigins = []string{"http://localhost:3000"}
 	router.Use(cors.New(config))
 
 	// routes
@@ -36,9 +35,8 @@ func main() {
 	overviewRoutes := api.Group("/overview")
 	netWorthRoutes := api.Group("records")
 	authRoutes := api.Group("auth")
-	routes.AuthRoutes(authRoutes)
-	routes.UserRoutes(api)
-	routes.OverviewRoutes(overviewRoutes)
+	routes.AuthRoutes(authRoutes, l, client)
+	routes.OverviewRoutes(overviewRoutes, l)
 	routes.NetWorthRoutes(netWorthRoutes)
 
 	// Start server

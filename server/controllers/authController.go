@@ -2,14 +2,16 @@ package controller
 
 // func Signup
 import (
-	"github.com/TudorEsan/FinanceAppGo/server/database"
-	helper "github.com/TudorEsan/FinanceAppGo/server/helpers"
-	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/TudorEsan/FinanceAppGo/server/database"
+	helper "github.com/TudorEsan/FinanceAppGo/server/helpers"
+	"github.com/TudorEsan/FinanceAppGo/server/models"
+	"github.com/hashicorp/go-hclog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -20,96 +22,129 @@ import (
 
 // func Login
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
 var validate = validator.New()
 
-// func VerifyUser() gin.Hal{
-// 	return
-// }
-func Signup() gin.HandlerFunc {
+type AuthController struct {
+	l              hclog.Logger
+	userCollection *mongo.Collection
+}
+
+func NewAuthController(l hclog.Logger, client *mongo.Client) *AuthController {
+	collection := database.OpenCollection(client, "user")
+	ll := l.Named("AuthController")
+	return &AuthController{ll, collection}
+}
+
+func (cc *AuthController) SignupHandler() gin.HandlerFunc {
+
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
-		fmt.Print("signup")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 		defer cancel()
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			cc.l.Error("Could not bind", err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error(), "body": c.Request.Body})
 			return
 		}
-		validationErr := validate.Struct(user)
-		if validationErr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": validationErr.Error()})
-			return
-		}
-		fmt.Println("befor valid username")
-		err := helper.ValidUsername(*user.Username)
+		// check if username is not present in the database
+		err := helper.ValidUsername(ctx, cc.userCollection, *user.Username)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		user.ID = primitive.NewObjectID()
-		fmt.Println("befor hash password")
-		hashedPassw, _ := helper.HashPassword(*user.Password)
-		*user.Password = hashedPassw
-		fmt.Println("before generate tokens")
-		jwt, refreshToken, _ := helper.GenerateTokens(user)
-		user.RefreshToken = &refreshToken
-		fmt.Println("before insert user")
-		_, err = userCollection.InsertOne(ctx, user)
-		fmt.Println("after insert user")
 
+		// apply logic to the user, hash password, add creation date
+		userForDb, err := helper.GetUserForDb(cc.userCollection, user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
 		}
-		c.SetCookie("token", jwt, 60*60*24*30, "", "", false, false)
-		c.SetCookie("refreshToken", jwt, 60*60*24*30, "", "", false, false)
+
+		// insert user in the db
+		err = controller.saveUser(ctx, userForDb)
 		if err != nil {
-			helper.ReturnError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
 		}
 
+		// generate all the auth tokens
+		jwt, refreshToken, err := helper.GenerateTokens(user)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+		helper.SetCookies(c, jwt, refreshToken)
+
 		c.JSON(http.StatusOK, gin.H{
-			"user": user,
+			"user": userForDb,
 		})
 	}
+
 }
-func Login() gin.HandlerFunc {
+
+func (controller *AuthController) LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("Login")
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 		defer cancel()
-		var user models.User
+		var user models.UserLoginForm
 		var foundUser models.User
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		fmt.Println("BEFORE FIND ONE")
-		err := userCollection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
+
+		err := controller.userCollection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
 		if err != nil {
-			helper.ReturnError(c, http.StatusBadRequest, errors.New("not valid username"))
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Username does not exist"})
 			return
 		}
-		fmt.Println("BEFORE COMPARE PASSWORD")
+
 		err = helper.CheckPassword(foundUser, user)
 		if err != nil {
-			helper.ReturnError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": err})
 			return
 		}
-		fmt.Println("BEFORE GENERATE TOKENS")
+
 		jwt, refreshToken, err := helper.GenerateTokens(foundUser)
 		if err != nil {
-			helper.ReturnError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Could not generate tokens"})
 			return
 		}
-		fmt.Println("BEDROE UPDATE REFRESH TOKEN")
-		foundUser, err = helper.UpdateTokens(c, jwt, refreshToken, foundUser.ID.Hex())
-		if err != nil {
-			helper.ReturnError(c, http.StatusBadRequest, err)
-			return
-		}
-		foundUser.Password = nil
+
+		helpers.SetCookies(c, jwt, refreshToken)
 		c.JSON(http.StatusOK, foundUser)
+	}
+}
+
+func (controller *AuthController) RefreshTokensHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		refreshToken, err := c.Cookie("refreshToken")
+		if err != nil {
+			c.JSON(401, gin.H{"message": "Refresh Token not present"})
+			return
+		}
+
+		claims, err := sharedvalidators.ValidateToken(refreshToken)
+		if err != nil {
+			controller.l.Error("Invalid Refresh Token")
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "invalid refresh token"})
+			return
+		}
+
+		user, err := helper.GetUser(controller.userCollection, claims.Id)
+		if err != nil {
+			controller.l.Error(err.Error())
+			c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+			return
+		}
+
+		token, refreshToken, err := helper.GenerateTokens(user)
+		if err != nil {
+			controller.l.Error(err.Error())
+			c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+			return
+		}
+		helper.SetCookies(c, token, refreshToken)
+		c.JSON(http.StatusOK, gin.H{"message": "success"})
 	}
 }

@@ -1,11 +1,11 @@
 package helpers
 
 import (
-	"github.com/TudorEsan/FinanceAppGo/server/database"
-	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/TudorEsan/FinanceAppGo/server/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,10 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var NetWorthCollection *mongo.Collection = database.OpenCollection(database.Client, "NetWorth")
-var RecordCollection *mongo.Collection = database.OpenCollection(database.Client, "Records")
-
-func AddRecord(userId primitive.ObjectID, record models.Record) (err error) {
+func AddRecord(recordCollection *mongo.Collection, userId primitive.ObjectID, record models.Record) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	// add id to the record
@@ -24,11 +21,11 @@ func AddRecord(userId primitive.ObjectID, record models.Record) (err error) {
 	record.UserId = userId
 	record.GenerateStatistics()
 
-	_, err = RecordCollection.InsertOne(ctx, record)
+	_, err = recordCollection.InsertOne(ctx, record)
 	return
 }
 
-func GetRecords(userId primitive.ObjectID, page, limit int) (records []models.Record, err error) {
+func GetRecords(recordCollection *mongo.Collection, userId primitive.ObjectID, page, limit int) (records []models.Record, err error) {
 	records = make([]models.Record, 0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -41,7 +38,7 @@ func GetRecords(userId primitive.ObjectID, page, limit int) (records []models.Re
 			"date": -1,
 		},
 	}
-	curr, err := RecordCollection.Find(ctx, bson.M{"userId": userId}, &opt)
+	curr, err := recordCollection.Find(ctx, bson.M{"userId": userId}, &opt)
 	if err != nil {
 		return
 	}
@@ -56,38 +53,38 @@ func GetRecords(userId primitive.ObjectID, page, limit int) (records []models.Re
 	return
 }
 
-func DeleteRecord(userId, recordId primitive.ObjectID) (err error) {
+func DeleteRecord(recordCollection *mongo.Collection, userId, recordId primitive.ObjectID) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	RecordCollection.FindOneAndDelete(ctx, bson.M{"userId": userId, "_id": recordId})
+	recordCollection.FindOneAndDelete(ctx, bson.M{"userId": userId, "_id": recordId})
 	return
 }
 
-func GetRecord(userId primitive.ObjectID, recordId string) (record models.Record, err error) {
+func GetRecord(recordCollection *mongo.Collection, userId primitive.ObjectID, recordId string) (record models.Record, err error) {
 	id, err := primitive.ObjectIDFromHex(recordId)
 	if err != nil {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	err = RecordCollection.FindOne(ctx, bson.M{"userId": userId, "_id": id}).Decode(&record)
+	err = recordCollection.FindOne(ctx, bson.M{"userId": userId, "_id": id}).Decode(&record)
 	return
 }
 
-func UpdateRecord(userId primitive.ObjectID, record models.Record) (err error) {
+func UpdateRecord(recordCollection *mongo.Collection, userId primitive.ObjectID, record models.Record) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	record.GenerateStatistics()
 	fmt.Println(userId)
 	fmt.Print(record.Id)
-	_, err = RecordCollection.UpdateOne(ctx, bson.M{"userId": userId, "_id": record.Id}, bson.M{"$set": record})
+	_, err = recordCollection.UpdateOne(ctx, bson.M{"userId": userId, "_id": record.Id}, bson.M{"$set": record})
 	fmt.Print("ERR ", err)
 	return
 }
 
-func GetRecordCount(userId primitive.ObjectID) (count int64, err error) {
+func GetRecordCount(recordCollection *mongo.Collection, userId primitive.ObjectID) (count int64, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	count, err = RecordCollection.CountDocuments(ctx, bson.M{"userId": userId})
+	count, err = recordCollection.CountDocuments(ctx, bson.M{"userId": userId})
 	return
 }

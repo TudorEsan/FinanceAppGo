@@ -2,12 +2,14 @@ package routes
 
 import (
 	controller "github.com/TudorEsan/FinanceAppGo/server/controllers"
-	"github.com/TudorEsan/FinanceAppGo/server/middleware"
+	middlewares "github.com/TudorEsan/FinanceAppGo/server/middleware"
+	"github.com/hashicorp/go-hclog"
 
 	"github.com/gin-gonic/gin"
 )
 
-func OverviewRoutes(incomingRoutes *gin.RouterGroup) {
-	incomingRoutes.Use(middleware.VerifyAuth())
-	incomingRoutes.GET("/networth", controller.GetNetWorthOverview())
+func OverviewRoutes(incomingRoutes *gin.RouterGroup, l hclog.Logger) {
+	c := controller.NewOverviewController(l)
+	incomingRoutes.Use(middlewares.VerifyAuth())
+	incomingRoutes.GET("/networth", c.GetNetWorthOverview())
 }

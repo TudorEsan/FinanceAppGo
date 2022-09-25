@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"github.com/TudorEsan/FinanceAppGo/server/models"
-	"context"
 	"errors"
 	"strings"
 	"time"
@@ -10,21 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type SignedDetails struct {
-	Email    string
-	Username string
-	Id       string
-	jwt.StandardClaims
-}
+
 
 var SECRET_KEY []byte = getSecretKey()
 
 func GenerateTokens(user models.User) (string, string, error) {
-	claims := &SignedDetails{
+	claims := &models.SignedDetails{
 		Email:    *user.Email,
 		Username: *user.Email,
 		Id:       user.ID.Hex(),
@@ -32,7 +24,7 @@ func GenerateTokens(user models.User) (string, string, error) {
 			ExpiresAt: time.Now().Local().Add(time.Minute * 60 * 24 * 30).Unix(),
 		},
 	}
-	refreshClaims := &SignedDetails{
+	refreshClaims := &models.SignedDetails{
 		Id: user.ID.Hex(),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * 24 * 30).Unix(),
@@ -47,8 +39,8 @@ func GenerateTokens(user models.User) (string, string, error) {
 	return token, refreshToken, nil
 }
 
-func ValidateToken(signedToken string) (*SignedDetails, error) {
-	token, err := jwt.ParseWithClaims(signedToken, &SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
+func ValidateToken(signedToken string) (*models.SignedDetails, error) {
+	token, err := jwt.ParseWithClaims(signedToken, &models.SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SECRET_KEY), nil
 	})
 	if err != nil && strings.Contains(err.Error(), "expired") {
@@ -58,43 +50,11 @@ func ValidateToken(signedToken string) (*SignedDetails, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	claims, ok := token.Claims.(*SignedDetails)
+	claims, ok := token.Claims.(*models.SignedDetails)
 	if !ok {
 		return nil, errors.New("invalid token")
 	}
 	return claims, nil
-}
-
-func ValidateRefreshToken(refreshToken string) (models.User, error) {
-	token, err := jwt.ParseWithClaims(refreshToken, &SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SECRET_KEY), nil
-	})
-	if err != nil {
-		return models.User{}, errors.New("refresh token is not valid")
-	}
-	claims, ok := token.Claims.(*SignedDetails)
-	if !ok {
-		return models.User{}, errors.New("token not valid")
-	}
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return models.User{}, errors.New("refresh token expired")
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
-	defer cancel()
-	var user models.User
-	id, err := primitive.ObjectIDFromHex(claims.Id)
-	if err != nil {
-		return models.User{}, errors.New("not valid object id")
-	}
-	err = userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
-	if err != nil {
-		return models.User{}, err
-	}
-	if *user.RefreshToken != refreshToken {
-		return models.User{}, errors.New("authorization failed")
-	}
-
-	return user, nil
 }
 
 func RemoveCookies(c *gin.Context) {

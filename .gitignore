@@ -15,6 +15,7 @@
 # vendor/
 
 .env
+/server/.env
 
 /node_modules
 /.pnp

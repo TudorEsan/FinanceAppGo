@@ -79,6 +79,22 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 		}
 		helper.SetCookies(c, jwt, refreshToken)
 
+		// send verification email
+
+		verificationToken, err := helpers.GenerateVerificationToken(userForDb.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Could not generate verification token"})
+			return
+		}
+		controller.l.Info("Verification token", verificationToken)
+
+		err = helper.SendVerificationEmail(userForDb, verificationToken)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Could not send verification email"})
+			return
+		}
+		controller.l.Info("Verification email sent")
+
 		c.JSON(http.StatusOK, gin.H{
 			"user": userForDb,
 		})

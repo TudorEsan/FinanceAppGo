@@ -11,6 +11,7 @@ import (
 
 func OverviewRoutes(incomingRoutes *gin.RouterGroup, l hclog.Logger, client *mongo.Client) {
 	c := controller.NewOverviewController(l, client)
-	incomingRoutes.Use(middlewares.VerifyAuth())
+	authMiddlewareController := middlewares.NewAuthMiddlewareController(l)
+	incomingRoutes.Use(authMiddlewareController.VerifyAuth())
 	incomingRoutes.GET("/networth", c.GetNetWorthOverview())
 }

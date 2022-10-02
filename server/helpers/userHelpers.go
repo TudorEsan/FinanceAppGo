@@ -4,10 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/go-hclog"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -56,9 +60,36 @@ func GetUser(userCollection *mongo.Collection, id string) (user models.User, err
 func VerifyUserEmail(userCollection *mongo.Collection, id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	_, err := userCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"emailVerified": true}})
+	_, err := userCollection.UpdateByID(ctx, id, bson.M{"$set": bson.M{"emailValidated": true}})
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func SendVerificationEmail(user models.User, verificationToken string) error {
+	from := mail.NewEmail("Tudor", "tudor.esan@icloud.com")
+	subject := "Verify your email"
+	to := mail.NewEmail(*user.Username, *user.Email)
+	hclog.L().Info("DOMAIN: ", os.Getenv("DOMAIN_NAME"))
+	content := fmt.Sprintf(`
+		<html>
+
+		<body>
+			<h1>Verify your email</h1>
+			<p>Click <a href='%s/verify-email/%s'>here</a> to verify your email</p>
+		</body>
+
+		</html>
+	`, os.Getenv("DOMAIN_NAME"), verificationToken)
+
+	message := mail.NewSingleEmail(from, subject, to, "", content)
+	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+	resp, err := client.Send(message)
+	hclog.L().Info("Email code", resp.StatusCode)
+	if err != nil {
+		return err
+	}
+	hclog.L().Info("email sent")
 	return nil
 }

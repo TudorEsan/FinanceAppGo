@@ -3,11 +3,8 @@ package controller
 import (
 	"github.com/TudorEsan/FinanceAppGo/server/database"
 	"github.com/TudorEsan/FinanceAppGo/server/helpers"
-	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/hashicorp/go-hclog"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -17,22 +14,10 @@ type VerificationController struct {
 }
 
 func NewVerificationController(l hclog.Logger, client *mongo.Client) *VerificationController {
-	collection := database.OpenCollection(client, "users")
+	collection := database.OpenCollection(client, "user")
 	return &VerificationController{l, collection}
 }
 
-func getUserIdFromVerificationToken(verificationToken string) (primitive.ObjectID, error) {
-	token, err := jwt.ParseWithClaims(verificationToken, &models.EmailVerificationToken{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(models.SECRET_KEY), nil
-	})	
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	claims := token.Claims.(*models.EmailVerificationToken)
-
-	return claims.UserId, nil
-}
 
 func (cc *VerificationController) VerificationHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -43,7 +28,7 @@ func (cc *VerificationController) VerificationHandler() gin.HandlerFunc {
 			c.JSON(401, gin.H{"message": "Verification Token not found"})
 			return
 		}
-		userId, err := getUserIdFromVerificationToken(verificationToken)
+		userId, err := helpers.GetUserIdFromVerificationToken(verificationToken)
 		cc.l.Info("User id: ", userId)
 		if err != nil {
 			cc.l.Error("Could not get user id from verification token")

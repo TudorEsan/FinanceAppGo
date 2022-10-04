@@ -76,8 +76,9 @@ func SendVerificationEmail(user models.User, verificationToken string) error {
 		<html>
 
 		<body>
-			<h1>Verify your email</h1>
-			<p>Click <a href='%s/verify-email/%s'>here</a> to verify your email</p>
+			<h1>
+			Please verify your email</h1>
+			<p>Click <a href='%s/api/verify/%s'>here</a> to verify your email</p>
 		</body>
 
 		</html>

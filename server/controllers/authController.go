@@ -74,6 +74,7 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 		// generate all the auth tokens
 		jwt, refreshToken, err := helper.GenerateTokens(user)
 		if err != nil {
+			controller.l.Error("Could not generate tokens", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
 		}

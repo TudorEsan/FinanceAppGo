@@ -1,34 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"os"
 
 	"github.com/TudorEsan/FinanceAppGo/server/database"
 	"github.com/TudorEsan/FinanceAppGo/server/routes"
 	"github.com/hashicorp/go-hclog"
-	"github.com/joho/godotenv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
-func verifyAllEnvVars() {
-	envVars := []string{"MONGO_URL", "JWT_SECRET", "SENDGRID_API_KEY", "DOMAIN_NAME"}
-	for _, envVar := range envVars {
-		if os.Getenv(envVar) == "" {
-			panic("Missing env var: " + envVar)
-		}
-	}
-}
 
-func init() {
-	fmt.Println("sodf")
-	godotenv.Load(".env")
-	verifyAllEnvVars()
-
-}
 
 func main() {
 
@@ -40,7 +23,8 @@ func main() {
 	client := database.DbInstace()
 
 	// react app
-	router.Use(static.Serve("/", static.LocalFile("./web", true)))
+	staticServer := static.Serve("/", static.LocalFile("./web", true))
+	router.Use(staticServer)
 
 	// cors config
 	config := cors.DefaultConfig()
@@ -63,6 +47,11 @@ func main() {
 	routes.OverviewRoutes(overviewRoutes, l, client)
 	routes.NetWorthRoutes(netWorthRoutes, client, l)
 	routes.VerifyRoutes(base, client, l)
+
+	router.NoRoute(func(c *gin.Context) {
+		c.f
+	})
+
 
 	// Start server
 	router.Run()

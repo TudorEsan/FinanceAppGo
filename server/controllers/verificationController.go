@@ -9,7 +9,7 @@ import (
 )
 
 type VerificationController struct {
-	l      hclog.Logger
+	l          hclog.Logger
 	collection *mongo.Collection
 }
 
@@ -17,7 +17,6 @@ func NewVerificationController(l hclog.Logger, client *mongo.Client) *Verificati
 	collection := database.OpenCollection(client, "user")
 	return &VerificationController{l, collection}
 }
-
 
 func (cc *VerificationController) VerificationHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -40,6 +39,7 @@ func (cc *VerificationController) VerificationHandler() gin.HandlerFunc {
 			c.JSON(400, gin.H{"message": "Could not verify user email"})
 			return
 		}
-		c.JSON(200, gin.H{"message": "Email verified"})
+		c.Redirect(301, "/")
+		// c.JSON(200, gin.H{"message": "Email verified"})
 	}
 }

@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/TudorEsan/FinanceAppGo/server/customErrors"
@@ -29,6 +30,7 @@ func (cc *AuthMiddlewareController) VerifyAuth() gin.HandlerFunc {
 		// Check if token exists
 		token, err := c.Cookie("token")
 		cc.l.Info("Token: " + token)
+
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "Token Not Found"})
 			cc.l.Error("Token Not Found")
@@ -49,6 +51,24 @@ func (cc *AuthMiddlewareController) VerifyAuth() gin.HandlerFunc {
 
 		// Validate Token
 		claims, err := customValidators.ValidateToken(token)
+		if err != nil {
+			cc.l.Error("Token Validation Error: " + err.Error())
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Token Validation Error"})
+			RemoveCookies(c)
+			c.Abort()
+			return
+		}
+		
+
+		cc.l.Info(fmt.Sprintf(
+			"Claims: %v",
+			claims))
+		if !claims.EmailValidated {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Email not validated"})
+			RemoveCookies(c)
+			c.Abort()
+			return
+		}
 
 		switch e := err.(type) {
 		case nil:
@@ -57,7 +77,7 @@ func (cc *AuthMiddlewareController) VerifyAuth() gin.HandlerFunc {
 			c.Set("UserId", claims.Id)
 			c.Next()
 			return
-			
+
 		case *customErrors.ExpiredToken:
 			// Token expired -> client should refresh the tokens
 			cc.l.Error("Token Expired")

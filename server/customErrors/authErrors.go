@@ -12,10 +12,11 @@ func (e ExpiredToken) Error() string {
 }
 
 type InvalidToken struct {
+	E error
 }
 
 func (e InvalidToken) Error() string {
-	return "Token is Invalid"
+	return e.E.Error()
 }
 
 func GetJsonError(e Error) string {

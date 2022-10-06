@@ -42,7 +42,7 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 		defer cancel()
-		var user models.User
+		var user models.UserRegisterForm
 		if err := c.BindJSON(&user); err != nil {
 			controller.l.Error("Could not bind", err)
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error(), "body": c.Request.Body})
@@ -50,10 +50,10 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 		}
 
 		// lowercase username
-		*user.Username = helper.Sanitize(*user.Username)
+		user.Username = helper.Sanitize(user.Username)
 
 		// check if username is not present in the database
-		err := helper.ValidUsername(ctx, controller.userCollection, *user.Username)
+		err := helper.ValidUsername(ctx, controller.userCollection, user.Username)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -74,7 +74,7 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 		}
 
 		// generate all the auth tokens
-		jwt, refreshToken, err := helper.GenerateTokens(user)
+		jwt, refreshToken, err := helper.GenerateTokens(userForDb)
 		if err != nil {
 			controller.l.Error("Could not generate tokens", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -98,9 +98,7 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 		}
 		controller.l.Info("Verification email sent")
 
-		c.JSON(http.StatusOK, gin.H{
-			"user": userForDb,
-		})
+		c.JSON(http.StatusOK, userForDb)
 	}
 
 }
@@ -111,6 +109,7 @@ func (controller *AuthController) LoginHandler() gin.HandlerFunc {
 		defer cancel()
 		var user models.UserLoginForm
 		var foundUser models.User
+
 		if err := c.BindJSON(&user); err != nil {
 			controller.l.Error("Could not bind", err)
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})

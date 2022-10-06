@@ -298,8 +298,16 @@ export const Record = () => {
         </Box>
         <OverviewTable record={record!.data!} />
       </MyCard>
-      <CryptoGrid cryptos={record!.data!.cryptos} />
-      <StocksGrid stocks={record!.data!.stocks} />
+      <CryptoGrid
+        cryptos={record!.data!.cryptos.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )}
+      />
+      <StocksGrid
+        stocks={record!.data!.stocks.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )}
+      />
     </>
   );
 };

@@ -16,6 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetUserFromContext(c *gin.Context) (user models.User, err error) {
@@ -32,16 +33,13 @@ func GetUserFromContext(c *gin.Context) (user models.User, err error) {
 	return
 }
 
-func GetUserForDb(user models.User) (models.User, error) {
+func GetUserForDb(u models.UserRegisterForm) (user models.User, err error) {
 	// formats user to be passed to the db
-	user.CreateDate, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-	user.ID = primitive.NewObjectID()
-	hashedPassw, err := HashPassword(*user.Password)
+	hashedPassw, err := HashPassword(*u.Password)
 	if err != nil {
-		return models.User{}, err
+		return
 	}
-	*user.Password = hashedPassw
-	return user, nil
+	return models.NewUser(u.Username, u.Email, hashedPassw), nil
 }
 
 func GetUser(userCollection *mongo.Collection, id string) (user models.User, err error) {
@@ -58,14 +56,15 @@ func GetUser(userCollection *mongo.Collection, id string) (user models.User, err
 	return
 }
 
-func VerifyUserEmail(userCollection *mongo.Collection, id primitive.ObjectID) error {
+func VerifyUserEmail(userCollection *mongo.Collection, id primitive.ObjectID) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	_, err := userCollection.UpdateByID(ctx, id, bson.M{"$set": bson.M{"emailValidated": true}})
+	var user models.User
+	err := userCollection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"emailValidated": true}}, options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&user)
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
-	return nil
+	return user, nil
 }
 
 func SendVerificationEmail(user models.User, verificationToken string) error {

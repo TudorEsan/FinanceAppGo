@@ -1,3 +1,4 @@
+import { LoadingButton } from "@mui/lab";
 import {
   Box,
   Button,
@@ -12,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { ControlledTextField } from "../components/ControlledInputs/ControlledTextField";
 import { useAuth } from "../hooks/useAuth";
+import { LoginInput } from "../types/auth";
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -33,17 +35,18 @@ export const Login = () => {
   };
 
   return (
-    <Box>
-      <Card
-        sx={{
-          maxWidth: "600px",
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "100%",
-        }}
-      >
+    <Box
+      p={2}
+      sx={{
+        maxWidth: "600px",
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: "100%",
+      }}
+    >
+      <Card>
         <form onSubmit={handleSubmit(handleLogin)}>
           <CardContent
             sx={{
@@ -71,14 +74,15 @@ export const Login = () => {
               rules={{ required: true }}
               type="password"
             />
-            <Button
+            <LoadingButton
               variant="contained"
               color="primary"
               sx={{ maxWidth: "200px" }}
               type="submit"
+              loading={isLoading}
             >
               Log in
-            </Button>
+            </LoadingButton>
             <Link
               component="button"
               underline="hover"

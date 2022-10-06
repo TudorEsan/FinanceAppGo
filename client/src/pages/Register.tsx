@@ -14,6 +14,7 @@ import { ControlledTextField } from "../components/ControlledInputs/ControlledTe
 import { useAuth } from "../hooks/useAuth";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { RegisterInput } from "../types/auth";
 
 const formSchema = Yup.object({
   username: Yup.string()
@@ -47,7 +48,6 @@ export const Register = () => {
     register(data);
   };
 
-  console.log(errors);
 
   return (
     <Box

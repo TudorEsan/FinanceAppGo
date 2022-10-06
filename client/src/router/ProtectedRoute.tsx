@@ -9,9 +9,13 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, emailValidated } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
+  }
+
+  if (isAuthenticated && !emailValidated) {
+    return <Navigate to="/email-verification" />;
   }
   return (
     <>

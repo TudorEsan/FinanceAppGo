@@ -28,6 +28,7 @@ type Config struct {
 	JwtSecret    []byte
 	SmtpUsername string
 	SmtpPassword string
+	DomainName   string
 }
 
 func getConfig() *Config {
@@ -44,6 +45,7 @@ func getConfig() *Config {
 		JwtSecret:    jwtSecret,
 		SmtpUsername: os.Getenv("SMTP_USERNAME"),
 		SmtpPassword: os.Getenv("SMTP_PASSWORD"),
+		DomainName:   os.Getenv("DOMAIN_NAME"),
 	}
 }
 

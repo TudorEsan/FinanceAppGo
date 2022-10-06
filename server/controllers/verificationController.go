@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/TudorEsan/FinanceAppGo/server/config"
 	"github.com/TudorEsan/FinanceAppGo/server/database"
 	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"github.com/gin-gonic/gin"
@@ -34,12 +35,23 @@ func (cc *VerificationController) VerificationHandler() gin.HandlerFunc {
 			c.JSON(400, gin.H{"message": "Invalid Verification Token"})
 			return
 		}
-		err = helpers.VerifyUserEmail(cc.collection, userId)
+		user, err := helpers.VerifyUserEmail(cc.collection, userId)
 		if err != nil {
 			c.JSON(400, gin.H{"message": "Could not verify user email"})
 			return
 		}
-		c.Redirect(301, "/")
+		cc.l.Info(user.String())
+
+		token, refreshToken, err := helpers.GenerateTokens(user)
+		if err != nil {
+			c.JSON(400, gin.H{"message": "Could not generate tokens"})
+			return
+		}
+		cc.l.Info(token)
+
+		helpers.SetCookies(c, token, refreshToken)
+		conf := config.New()
+		c.Redirect(301, conf.DomainName)
 		// c.JSON(200, gin.H{"message": "Email verified"})
 	}
 }

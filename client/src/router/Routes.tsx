@@ -1,6 +1,15 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import { AddRecord, Dashboard, EditRecord, Login, Record, Records, Register } from "../pages";
+import {
+  AddRecord,
+  Dashboard,
+  EditRecord,
+  Login,
+  Record,
+  Records,
+  Register,
+  ValidateEmail,
+} from "../pages";
 import { CloneRecord } from "../pages/Record/CloneRecord";
 import { ProtectedRoute } from "./ProtectedRoute";
 
@@ -15,6 +24,8 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
+      <Route path="/email-verification" element={<ValidateEmail />} />
 
       <Route
         path="/records"

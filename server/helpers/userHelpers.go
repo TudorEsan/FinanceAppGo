@@ -19,18 +19,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetUserFromContext(c *gin.Context) (user models.User, err error) {
-	userAny, exists := c.Get("user")
+func GetUserIdFromContext(c *gin.Context) (userId primitive.ObjectID, err error) {
+	userIdAny, exists := c.Get("UserId")
 	if !exists {
-		err = errors.New("key does not exist in context")
+		err = errors.New("user key does not exist in gin context")
 		return
 	}
-	user, ok := userAny.(models.User)
+	userIdStr, ok := userIdAny.(string)
 	if !ok {
-		err = errors.New("could not convert to user")
+		err = errors.New("could not convert userIdAny to string")
 		return
 	}
-	return
+	return primitive.ObjectIDFromHex(userIdStr)
 }
 
 func GetUserForDb(u models.UserRegisterForm) (user models.User, err error) {

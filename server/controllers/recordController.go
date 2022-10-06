@@ -27,12 +27,12 @@ func NewRecordController(l hclog.Logger, client *mongo.Client) *RecordController
 func (cc *RecordController) GetRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		user, err := helpers.GetUserFromContext(c)
+		userId, err := helpers.GetUserIdFromContext(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		record, err := helpers.GetRecord(cc.recordCollection, user.ID, id)
+		record, err := helpers.GetRecord(cc.recordCollection, userId, id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -53,12 +53,12 @@ func (cc *RecordController) AddRecord() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		user, err := helpers.GetUserFromContext(c)
+		userId, err := helpers.GetUserIdFromContext(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		err = helpers.AddRecord(cc.recordCollection, user.ID, recordBody)
+		err = helpers.AddRecord(cc.recordCollection, userId, recordBody)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -71,7 +71,7 @@ func (cc *RecordController) AddRecord() gin.HandlerFunc {
 
 func (cc *RecordController) GetRecords() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := helpers.GetUserFromContext(c)
+		userId, err := helpers.GetUserIdFromContext(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -86,7 +86,7 @@ func (cc *RecordController) GetRecords() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		records, err := helpers.GetRecords(cc.recordCollection, user.ID, int(page), perPage)
+		records, err := helpers.GetRecords(cc.recordCollection, userId, int(page), perPage)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -98,12 +98,12 @@ func (cc *RecordController) GetRecords() gin.HandlerFunc {
 
 func (cc *RecordController) GetRecordCount() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := helpers.GetUserFromContext(c)
+		userId, err := helpers.GetUserIdFromContext(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		count, err := helpers.GetRecordCount(cc.recordCollection, user.ID)
+		count, err := helpers.GetRecordCount(cc.recordCollection, userId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -114,7 +114,7 @@ func (cc *RecordController) GetRecordCount() gin.HandlerFunc {
 
 func (cc *RecordController) DeleteRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := helpers.GetUserFromContext(c)
+		userID, err := helpers.GetUserIdFromContext(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -130,7 +130,7 @@ func (cc *RecordController) DeleteRecord() gin.HandlerFunc {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		}
-		err = helpers.DeleteRecord(cc.recordCollection, user.ID, netWorthId)
+		err = helpers.DeleteRecord(cc.recordCollection, userID, netWorthId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		}
@@ -140,7 +140,7 @@ func (cc *RecordController) DeleteRecord() gin.HandlerFunc {
 
 func (cc *RecordController) UpdateRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := helpers.GetUserFromContext(c)
+		userId, err := helpers.GetUserIdFromContext(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -159,7 +159,7 @@ func (cc *RecordController) UpdateRecord() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		err = helpers.UpdateRecord(cc.recordCollection, user.ID, recordBody)
+		err = helpers.UpdateRecord(cc.recordCollection, userId, recordBody)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return

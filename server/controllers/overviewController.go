@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -24,24 +25,28 @@ func NewOverviewController(l hclog.Logger, client *mongo.Client) *OverviewContro
 
 func (cc *OverviewController) GetNetWorthOverview() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := helpers.GetUserFromContext(c)
+		userId, err := helpers.GetUserIdFromContext(c)
 		limit := c.DefaultQuery("limit", "10")
 		if err != nil {
+			cc.l.Error(fmt.Sprintf("Could not get user from context: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 		limitInt, err := strconv.Atoi(limit)
 		if err != nil {
+			cc.l.Error(fmt.Sprintf("Could not convert limit to int: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		overview, err := helpers.GetRecordsOverview(cc.recordCollection, user.ID, limitInt)
+		overview, err := helpers.GetRecordsOverview(cc.recordCollection, userId, limitInt)
 		if err != nil {
+			cc.l.Error(fmt.Sprintf("Could not get records overview: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		last2Records, err := helpers.GetLast2Records(cc.recordCollection ,user.ID)
+		last2Records, err := helpers.GetLast2Records(cc.recordCollection ,userId)
 		if err != nil {
+			cc.l.Error(fmt.Sprintf("Could not get last 2 records: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}

@@ -28,6 +28,7 @@ export const Login = () => {
   });
 
   const handleLogin = (data: LoginInput) => {
+    data.username = data.username.trim().toLowerCase();
     login(data.username, data.password);
   };
 

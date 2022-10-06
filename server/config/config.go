@@ -3,14 +3,17 @@ package config
 import (
 	"os"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/joho/godotenv"
 )
+
+var l = hclog.Default().Named("Config")
 
 func verifyAllEnvVars() {
 	envVars := []string{"MONGO_URL", "JWT_SECRET", "SENDGRID_API_KEY", "DOMAIN_NAME"}
 	for _, envVar := range envVars {
 		if os.Getenv(envVar) == "" {
-			panic("Missing env var: " + envVar)
+			l.Error(("Missing env var: " + envVar))
 		}
 	}
 }
@@ -28,9 +31,17 @@ type Config struct {
 }
 
 func getConfig() *Config {
+	jwtSecret := []byte("secret")
+	mongoUrl := "mongodb://localhost:27017"
+	if os.Getenv("JWT_SECRET") != "" {
+		jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+	}
+	if os.Getenv("MONGO_URL") != "" {
+		mongoUrl = os.Getenv("MONGO_URL")
+	}
 	return &Config{
-		MongoUrl:     os.Getenv("MONGO_URL"),
-		JwtSecret:    []byte(os.Getenv("JWT_SECRET")),
+		MongoUrl:     mongoUrl,
+		JwtSecret:    jwtSecret,
 		SmtpUsername: os.Getenv("SMTP_USERNAME"),
 		SmtpPassword: os.Getenv("SMTP_PASSWORD"),
 	}

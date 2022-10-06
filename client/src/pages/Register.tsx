@@ -43,6 +43,7 @@ export const Register = () => {
   } = useForm<RegisterInput>(formConfig);
 
   const handleRegister = (data: RegisterInput) => {
+    data.username = data.username.trim().toLowerCase();
     register(data);
   };
 

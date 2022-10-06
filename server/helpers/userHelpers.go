@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/TudorEsan/FinanceAppGo/server/models"
@@ -93,4 +94,8 @@ func SendVerificationEmail(user models.User, verificationToken string) error {
 	}
 	hclog.L().Info("email sent")
 	return nil
+}
+
+func Sanitize(str string) string {
+	return strings.Trim(strings.ToLower(str), " ")
 }

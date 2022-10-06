@@ -3,9 +3,8 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
-
 	"github.com/TudorEsan/FinanceAppGo/server/customErrors"
-	"github.com/TudorEsan/FinanceAppGo/server/customValidators"
+	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/go-hclog"
 )
@@ -50,7 +49,7 @@ func (cc *AuthMiddlewareController) VerifyAuth() gin.HandlerFunc {
 		}
 
 		// Validate Token
-		claims, err := customValidators.ValidateToken(token)
+		claims, err := helpers.ValidateToken(token)
 		if err != nil {
 			cc.l.Error("Token Validation Error: " + err.Error())
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "Token Validation Error"})

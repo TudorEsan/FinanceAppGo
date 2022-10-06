@@ -27,12 +27,14 @@ export interface IStock {
   name: string;
   symbol: string;
   shares: number;
-  valuedAt: number;
+  currentPrice: number;
+  valuedAt?: number;
 }
 
 export interface ICrypto {
   name: string;
   symbol: string;
   coins: number;
-  valuedAt: number;
+  currentPrice: number;
+  valuedAt?: number;
 }

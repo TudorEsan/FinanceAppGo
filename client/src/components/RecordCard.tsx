@@ -74,8 +74,8 @@ export const Stocks = ({ control, fields, remove }: IRecordStocksProps) => {
                   key={field.id}
                   type="number"
                   control={control}
-                  name={`stocks.${index}.valuedAt`}
-                  label="Valued At"
+                  name={`stocks.${index}.currentPrice`}
+                  label="Current Price"
                 />
               </Grid>
             </Grid>
@@ -127,8 +127,8 @@ const Cryptos = ({ control, fields, remove }: IRecordCryptosProps) => {
                   key={field.id}
                   type="number"
                   control={control}
-                  name={`cryptos.${index}.valuedAt`}
-                  label="Valued At"
+                  name={`cryptos.${index}.currentPrice`}
+                  label="Current Price"
                 />
               </Grid>
             </Grid>

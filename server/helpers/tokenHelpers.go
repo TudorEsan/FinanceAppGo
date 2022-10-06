@@ -1,9 +1,11 @@
 package helpers
 
 import (
+	"strings"
 	"time"
 
 	"github.com/TudorEsan/FinanceAppGo/server/config"
+	"github.com/TudorEsan/FinanceAppGo/server/customErrors"
 	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -12,6 +14,25 @@ import (
 )
 
 var conf = config.New()
+
+func ValidateToken(signedToken string) (*models.SignedDetails, error) {
+
+	token, err := jwt.ParseWithClaims(signedToken, &models.SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(conf.JwtSecret), nil
+	})
+	if err != nil && strings.Contains(err.Error(), "expired") {
+		return nil, customErrors.ExpiredToken{}
+	}
+	if err != nil {
+		return nil, customErrors.InvalidToken{E: err}
+	}
+
+	claims, ok := token.Claims.(*models.SignedDetails)
+	if !ok {
+		return nil, customErrors.InvalidToken{}
+	}
+	return claims, nil
+}
 
 func GenerateTokens(user models.User) (string, string, error) {
 	claims := &models.SignedDetails{
@@ -24,7 +45,10 @@ func GenerateTokens(user models.User) (string, string, error) {
 		},
 	}
 	refreshClaims := &models.SignedDetails{
-		Id: user.ID.Hex(),
+		Id:             user.ID.Hex(),
+		Username:       *user.Username,
+		EmailValidated: user.EmailValidated,
+		Email:          *user.Email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * 24 * 30).Unix(),
 		},

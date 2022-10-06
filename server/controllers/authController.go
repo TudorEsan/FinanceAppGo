@@ -6,9 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/TudorEsan/FinanceAppGo/server/customValidators"
 	"github.com/TudorEsan/FinanceAppGo/server/database"
-	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	helper "github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"github.com/hashicorp/go-hclog"
@@ -50,6 +48,10 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error(), "body": c.Request.Body})
 			return
 		}
+
+		// lowercase username
+		*user.Username = helper.Sanitize(*user.Username)
+
 		// check if username is not present in the database
 		err := helper.ValidUsername(ctx, controller.userCollection, *user.Username)
 		if err != nil {
@@ -82,7 +84,7 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 
 		// send verification email
 
-		verificationToken, err := helpers.GenerateVerificationToken(userForDb.ID)
+		verificationToken, err := helper.GenerateVerificationToken(userForDb.ID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "Could not generate verification token"})
 			return
@@ -110,19 +112,23 @@ func (controller *AuthController) LoginHandler() gin.HandlerFunc {
 		var user models.UserLoginForm
 		var foundUser models.User
 		if err := c.BindJSON(&user); err != nil {
+			controller.l.Error("Could not bind", err)
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
+		user.Username = helper.Sanitize(user.Username)
+		controller.l.Info("Sanitized User", user.Username)
 
 		err := controller.userCollection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
 		if err != nil {
+			controller.l.Error("Username does not exist", err)
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Username does not exist"})
 			return
 		}
 
 		err = helper.CheckPassword(foundUser, user)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": err})
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 
@@ -132,7 +138,7 @@ func (controller *AuthController) LoginHandler() gin.HandlerFunc {
 			return
 		}
 
-		helpers.SetCookies(c, jwt, refreshToken)
+		helper.SetCookies(c, jwt, refreshToken)
 		c.JSON(http.StatusOK, foundUser)
 	}
 }
@@ -145,7 +151,7 @@ func (controller *AuthController) RefreshTokensHandler() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := customValidators.ValidateToken(refreshToken)
+		claims, err := helper.ValidateToken(refreshToken)
 		if err != nil {
 			controller.l.Error("Invalid Refresh Token")
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "invalid refresh token"})

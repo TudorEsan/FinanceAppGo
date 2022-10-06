@@ -49,7 +49,7 @@ func main() {
 	routes.VerifyRoutes(base, client, l)
 
 	router.NoRoute(func(c *gin.Context) {
-		c.f
+		staticServer(c);
 	})
 
 

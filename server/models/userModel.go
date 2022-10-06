@@ -23,3 +23,13 @@ type User struct {
 func (user User) String() string {
 	return fmt.Sprintf("USER:\nID: %s\n username: %s\n email: %s\n emailVerified: %s\n", user.ID.Hex(), *user.Username, *user.Email, user.EmailValidated)
 }
+
+func NewUser (username string, email string, password string) User {
+	return User{
+		ID:         primitive.NewObjectID(),
+		Username:   &username,
+		Email:      &email,
+		Password:   &password,
+		CreateDate: time.Now(),
+	}
+}

@@ -35,6 +35,7 @@ export function ControlledDatePicker({
             renderInput={(params: any) => (
               <TextField fullWidth sx={{ minWidth: 150 }} {...params} />
             )}
+            inputFormat="dd/MM/yyyy"
           />
         </LocalizationProvider>
       )}

@@ -14,6 +14,11 @@ export const Dashboard = () => {
   if (error !== null) {
     return <Typography color="error">{error}</Typography>;
   }
+
+  if (currentRecord === null || lastRecord === null) {
+    return <Typography>Statistics will appear after you have a minimum of 2 records.</Typography>;
+  }
+
   return (
     <>
       <Grid container spacing={3}>

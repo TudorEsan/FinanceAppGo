@@ -5,8 +5,8 @@ import "time"
 type Overview struct {
 	NetworthOverview  []NetworthOverview  `json:"networthOverview"`
 	LiquidityOverview []LiquidityOverview `json:"liquidityOverview"`
-	CurrentRecord     Record              `json:"currentRecord"`
-	LastRecord        Record              `json:"lastRecord"`
+	CurrentRecord     *Record             `json:"currentRecord"`
+	LastRecord        *Record             `json:"lastRecord"`
 }
 
 type NetworthOverview struct {

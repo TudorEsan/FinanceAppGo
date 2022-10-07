@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -145,25 +146,41 @@ func (cc *RecordController) UpdateRecord() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
+		cc.l.Info(fmt.Sprintf("userId: %s", userId))
+
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "id is required"})
 			return
 		}
-		var recordBody models.Record
+		cc.l.Info(fmt.Sprintf("id: %s", id))
+
+		var recordBody models.RecordBody
 		if err := c.BindJSON(&recordBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
+		cc.l.Info(fmt.Sprintf("recordBody: %v", recordBody))
+		recordBody.Id = id
+
 		if err := validate.Struct(recordBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		err = helpers.UpdateRecord(cc.recordCollection, userId, recordBody)
+
+		record, err := recordBody.ToRecord(userId)
+		if err != nil {
+			cc.l.Error(fmt.Sprintf("Error converting recordBody to record: %v", err.Error()))
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+		cc.l.Info(fmt.Sprintf("FROM RecordBody: \n  %v", record))
+
+		updatedRecord, err := helpers.UpdateRecord(cc.recordCollection, userId, record)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"message": "Updated"})
+		c.JSON(http.StatusOK, updatedRecord)
 	}
 }

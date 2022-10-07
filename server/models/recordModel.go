@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"math"
 	"sync"
 	"time"
@@ -25,7 +26,11 @@ type Record struct {
 	CryptosValue          *float32           `json:"cryptosValue,omitempty" bson:"cryptosValue"`
 	StocksValue           *float32           `json:"stocksValue,omitempty" bson:"stocksValue"`
 	Liquidity             *float32           `json:"liquidity" bson:"liquidity" binding:"required,min=0"`
-	TotalInvested         float32            `json:"totalInvested,omitempty" bson:"totalInvested"`
+	Total                 float32            `json:"total,omitempty" bson:"total"`
+}
+
+func (record Record) String() string {
+	return fmt.Sprintf("Record\t{\nId: %v,\n UserId: %v,\n Date: %v,\n InvestedAmount: %v,\n Stocks: %v,\n Cryptos: %v,\n StockDiversification: %v,\n CryptoDiversification: %v,\n CryptosValue: %v,\n StocksValue: %v,\n Liquidity: %v,\n Total: %v\n}", record.Id, record.UserId, record.Date, *record.InvestedAmount, record.Stocks, record.Cryptos, *record.StockDiversification, *record.CryptoDiversification, *record.CryptosValue, *record.StocksValue, *record.Liquidity, record.Total)
 }
 
 type Diversification struct {
@@ -53,17 +58,29 @@ type DeleteRecordBody struct {
 }
 
 type RecordBody struct {
-	Id                    string            `json:"id,omitempty"`
-	Date                  time.Time         `json:"date" binding:"required"`
-	InvestedAmount        float32           `json:"investedAmount,omitempty"`
-	Stocks                Stocks            `json:"stocks" binding:"required,dive"`
-	Cryptos               Cryptos           `json:"cryptos" binding:"required"`
-	StockDiversification  []Diversification `json:"stockDiversification" `
-	CryptoDiversification []Diversification `json:"cryptoDiversification"`
-	CryptosValue          float32           `json:"cryptosValue,omitempty"`
-	StocksValue           float32           `json:"stocksValue,omitempty"`
-	Liquidity             *float32          `json:"liquidity" binding:"required,min=0"`
-	TotalInvested         float32           `json:"totalInvested,omitempty"`
+	Id        string    `json:"-"`
+	Date      time.Time `json:"date" binding:"required"`
+	Stocks    Stocks    `json:"stocks" binding:"required,dive"`
+	Cryptos   Cryptos   `json:"cryptos" binding:"required,dive"`
+	Liquidity *float32  `json:"liquidity" binding:"required,min=0"`
+}
+
+func (recordBody RecordBody) ToRecord(userId primitive.ObjectID) (Record, error) {
+	var record Record
+	record.Date = recordBody.Date
+	record.UserId = userId
+	record.Stocks = recordBody.Stocks
+	record.Cryptos = recordBody.Cryptos
+	record.Liquidity = recordBody.Liquidity
+
+	id, err := primitive.ObjectIDFromHex(recordBody.Id)
+	if err != nil {
+		return Record{}, err
+	}
+	fmt.Println("recordId: ", id)
+	record.Id = id
+	record.GenerateStatistics()
+	return record, nil
 }
 
 func (stocks Stocks) GetValue() (sum float32) {
@@ -110,6 +127,7 @@ func (record Record) GetCryptoDiversification(cryptosValue float32) (diversifica
 func (record *Record) GenerateStatistics() {
 	var wg sync.WaitGroup
 	wg.Add(2)
+
 	go func() {
 		value := record.Stocks.GetValue()
 		record.StocksValue = &value
@@ -127,7 +145,7 @@ func (record *Record) GenerateStatistics() {
 	wg.Wait()
 	investedAmount := *record.CryptosValue + *record.StocksValue
 	record.InvestedAmount = &investedAmount
-	record.TotalInvested = investedAmount + *record.Liquidity
+	record.Total = investedAmount + *record.Liquidity
 }
 
 // func (recordBody RecordBody) Split() (record Record, info Info) {

@@ -59,8 +59,9 @@ export const EditRecord = () => {
 
   useEffect(() => {
     if (record.data !== null) {
-      console.log(record.data);
-      record.data.date = new Date(getUtcIso(record.data.date));
+      // console.log(record.data.date);
+      // record.data.date = new Date(getUtcIso(record.data.date));
+      // console.log(record.data.date);
       reset(record.data);
     }
   }, [record]);

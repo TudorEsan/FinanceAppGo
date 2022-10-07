@@ -13,7 +13,7 @@ import (
 )
 
 type OverviewController struct {
-	l hclog.Logger
+	l                hclog.Logger
 	recordCollection *mongo.Collection
 }
 
@@ -44,14 +44,19 @@ func (cc *OverviewController) GetNetWorthOverview() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		last2Records, err := helpers.GetLast2Records(cc.recordCollection ,userId)
+		last2Records, err := helpers.GetLast2Records(cc.recordCollection, userId)
 		if err != nil {
 			cc.l.Error(fmt.Sprintf("Could not get last 2 records: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		overview.CurrentRecord = last2Records[0]
-		overview.LastRecord = last2Records[1]
+		if len(last2Records) == 2 {
+			overview.CurrentRecord = &last2Records[0]
+			overview.LastRecord = &last2Records[1]
+		} else {
+			overview.CurrentRecord = nil
+			overview.LastRecord = nil
+		}
 		c.JSON(http.StatusOK, gin.H{"overview": overview})
 	}
 }

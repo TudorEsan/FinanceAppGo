@@ -292,9 +292,13 @@ export const Record = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <MyPie data={record!.data!.cryptoDiversification} />
-          <MyPie data={record!.data!.stockDiversification} />
-          <MyPie data={diversification} />
+          {record.data!.cryptoDiversification!.length > 0 && (
+            <MyPie data={record!.data!.cryptoDiversification} />
+          )}
+          {record.data!.stockDiversification!.length > 0 && (
+            <MyPie data={record!.data!.stockDiversification} />
+          )}
+          {diversification!.length > 0 && <MyPie data={diversification} />}
         </Box>
         <OverviewTable record={record!.data!} />
       </MyCard>

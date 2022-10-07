@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/TudorEsan/FinanceAppGo/server/models"
@@ -71,15 +70,12 @@ func GetRecord(recordCollection *mongo.Collection, userId primitive.ObjectID, re
 	return
 }
 
-func UpdateRecord(recordCollection *mongo.Collection, userId primitive.ObjectID, record models.Record) (err error) {
+func UpdateRecord(recordCollection *mongo.Collection, userId primitive.ObjectID, record models.Record) (updatedRecord models.Record, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	record.GenerateStatistics()
-	fmt.Println(userId)
-	fmt.Print(record.Id)
-	_, err = recordCollection.UpdateOne(ctx, bson.M{"userId": userId, "_id": record.Id}, bson.M{"$set": record})
-	fmt.Print("ERR ", err)
-	return
+	err = recordCollection.FindOneAndUpdate(ctx, bson.M{"userId": userId, "_id": record.Id}, bson.M{"$set": record},
+		options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&updatedRecord)
+	return updatedRecord, err
 }
 
 func GetRecordCount(recordCollection *mongo.Collection, userId primitive.ObjectID) (count int64, err error) {

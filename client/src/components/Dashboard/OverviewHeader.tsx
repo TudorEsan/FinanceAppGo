@@ -12,8 +12,8 @@ import { round } from "../../helpers/generalHelpers";
 import { Money } from "@mui/icons-material";
 
 interface IProps {
-  lastRecord?: IRecord | null;
-  currentRecord?: IRecord | null;
+  lastRecord: IRecord | null;
+  currentRecord: IRecord | null;
 }
 interface IItemContentProps {
   title: string;
@@ -21,7 +21,7 @@ interface IItemContentProps {
   upBy: number;
   value: number;
   icon: React.ReactNode;
-  since: Date;
+  since: Date | null;
 }
 const ItemContent = ({
   title,
@@ -71,6 +71,7 @@ const ItemContent = ({
 };
 
 export const OverviewHeader = ({ lastRecord, currentRecord }: IProps) => {
+
   return (
     <Grid item container xs={12} spacing={2}>
       <Grid item md={6} xs={12}>

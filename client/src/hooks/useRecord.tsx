@@ -1,7 +1,11 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { getErrorMessage } from "../helpers/errors";
-import { getDiversification } from "../helpers/recordHelper";
+import {
+  calculateRecordWithCurrentPrices,
+  getDiversification,
+  getRecordForRequest,
+} from "../helpers/recordHelper";
 import { handleError, handleSuccess } from "../helpers/state";
 import {
   deleteRecordReq,
@@ -27,8 +31,9 @@ export const useRecord = () => {
   const getRecord = async () => {
     try {
       const record = await getRecordReq(id!);
-      setDiversification(getDiversification(record));
-      handleSuccess(record, setRecord);
+      const withCurrentPrice = calculateRecordWithCurrentPrices(record);
+      setDiversification(getDiversification(withCurrentPrice));
+      handleSuccess(withCurrentPrice, setRecord);
     } catch (e) {
       console.error(e);
       handleError(setRecord, getErrorMessage(e));
@@ -51,8 +56,9 @@ export const useRecord = () => {
     setLoading(true);
     setError(null);
     try {
-      const updatedRecord = await updateRecordReq(id!, record);
-      
+      const r = getRecordForRequest(record);
+      console.log(r);
+      const updatedRecord = await updateRecordReq(id!, r);
     } catch (e) {
       setError(getErrorMessage(e));
       setLoading(false);

@@ -8,10 +8,8 @@ import (
 	"github.com/TudorEsan/FinanceAppGo/server/models"
 	"github.com/go-playground/assert"
 	"github.com/golang-jwt/jwt"
-	"github.com/hashicorp/go-hclog"
 )
 
-var l = hclog.Default().Named("test")
 
 func TestGenerateTokens(t *testing.T) {
 	user := models.NewUser("test", "test", "test")

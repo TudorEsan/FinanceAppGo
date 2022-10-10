@@ -9,7 +9,7 @@ export const recordFormSchema = Yup.object({
     Yup.object().shape({
       symbol: Yup.string().required("Symbol is required"),
       shares: Yup.number(),
-      valuedAt: Yup.number()
+      currentPrice: Yup.number()
         .required("Field is required")
         .min(0, "Price must be greater or equal to 0"),
     })
@@ -18,7 +18,7 @@ export const recordFormSchema = Yup.object({
     Yup.object().shape({
       symbol: Yup.string().required("Symbol is required"),
       coins: Yup.number(),
-      valuedAt: Yup.number()
+      currentPrice: Yup.number()
         .required("Field is required")
         .min(0, "Price must be greater or equal to 0"),
     })

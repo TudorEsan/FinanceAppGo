@@ -45,7 +45,7 @@ func (cc *RecordController) GetRecord() gin.HandlerFunc {
 
 func (cc *RecordController) AddRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var recordBody models.Record
+		var recordBody models.RecordBody
 		if err := c.BindJSON(&recordBody); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -59,7 +59,17 @@ func (cc *RecordController) AddRecord() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
-		err = helpers.AddRecord(cc.recordCollection, userId, recordBody)
+		cc.l.Info(fmt.Sprintf("Adding record for user %s", userId))
+
+		record, err := recordBody.ToRecord(userId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+
+		cc.l.Info(fmt.Sprintf("Adding record: %s", record))
+
+		err = helpers.AddRecord(cc.recordCollection, userId, record)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
@@ -181,6 +191,9 @@ func (cc *RecordController) UpdateRecord() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
+
+		cc.l.Info(fmt.Sprintf("Updated Record: \n  %v", updatedRecord))
+
 		c.JSON(http.StatusOK, updatedRecord)
 	}
 }

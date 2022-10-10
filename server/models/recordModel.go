@@ -73,12 +73,16 @@ func (recordBody RecordBody) ToRecord(userId primitive.ObjectID) (Record, error)
 	record.Cryptos = recordBody.Cryptos
 	record.Liquidity = recordBody.Liquidity
 
-	id, err := primitive.ObjectIDFromHex(recordBody.Id)
-	if err != nil {
-		return Record{}, err
+	if recordBody.Id != "" {
+		id, err := primitive.ObjectIDFromHex(recordBody.Id)
+		if err != nil {
+			return Record{}, err
+		}
+		fmt.Println("recordId: ", id)
+		record.Id = id
+	} else {
+		record.Id = primitive.NewObjectID()
 	}
-	fmt.Println("recordId: ", id)
-	record.Id = id
 	record.GenerateStatistics()
 	return record, nil
 }

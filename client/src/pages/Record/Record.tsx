@@ -304,12 +304,12 @@ export const Record = () => {
       </MyCard>
       <CryptoGrid
         cryptos={record!.data!.cryptos.sort((a, b) =>
-          a.name.localeCompare(b.name)
+          a.symbol.localeCompare(b.name)
         )}
       />
       <StocksGrid
         stocks={record!.data!.stocks.sort((a, b) =>
-          a.name.localeCompare(b.name)
+          a.symbol.localeCompare(b.name)
         )}
       />
     </>

@@ -5,12 +5,15 @@ import (
 	"time"
 
 	"github.com/TudorEsan/FinanceAppGo/server/models"
+	"github.com/hashicorp/go-hclog"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+var l = hclog.Default().Named("RecordHelpers")
 
 func AddRecord(recordCollection *mongo.Collection, userId primitive.ObjectID, record models.Record) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)

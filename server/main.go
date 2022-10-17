@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 
 	"github.com/TudorEsan/FinanceAppGo/server/database"
 	"github.com/TudorEsan/FinanceAppGo/server/routes"
@@ -11,15 +12,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
+var appName = "FinanceAppGo"
 
 func main() {
-
 	// check envs are set
 
 	// dependencies
 	router := gin.Default()
 	l := hclog.Default()
+	l.Info(fmt.Sprintf("Starting %s", appName))
 	client := database.DbInstace()
 
 	// react app
@@ -49,9 +50,8 @@ func main() {
 	routes.VerifyRoutes(base, client, l)
 
 	router.NoRoute(func(c *gin.Context) {
-		staticServer(c);
+		staticServer(c)
 	})
-
 
 	// Start server
 	router.Run()

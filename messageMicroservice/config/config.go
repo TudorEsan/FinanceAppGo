@@ -10,7 +10,7 @@ import (
 var l = hclog.Default().Named("Config")
 
 func verifyAllEnvVars() {
-	envVars := []string{"SENDGRID_API_KEY"}
+	envVars := []string{"SENDGRID_API_KEY", "RABBIT_URL"}
 	for _, envVar := range envVars {
 		if os.Getenv(envVar) == "" {
 			l.Error(("Missing env var: " + envVar))
@@ -18,8 +18,19 @@ func verifyAllEnvVars() {
 	}
 }
 
+var loaded = false
+
 func init() {
-	godotenv.Load(".env")
+	loadEnvs()
+}
+
+func loadEnvs() {
+	l.Info("Loading env vars")
+	err := godotenv.Load("../.env")
+	if err != nil {
+		l.Error("Error loading .env file")
+	}
+	loaded = true
 	verifyAllEnvVars()
 }
 
@@ -29,6 +40,9 @@ type Config struct {
 }
 
 func New() *Config {
+	if !loaded {
+		loadEnvs()
+	}
 	return &Config{
 		SENDGRID_API_KEY: os.Getenv("SENDGRID_API_KEY"),
 		RABBIT_URL:       os.Getenv("RABBIT_URL"),

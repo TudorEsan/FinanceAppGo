@@ -50,6 +50,7 @@ func (cc *OverviewController) GetNetWorthOverview() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
+		cc.l.Info("last 2 records", last2Records)
 		if len(last2Records) == 2 {
 			overview.CurrentRecord = &last2Records[0]
 			overview.LastRecord = &last2Records[1]

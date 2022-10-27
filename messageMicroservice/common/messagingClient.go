@@ -5,8 +5,11 @@ import (
 
 	"github.com/TudorEsan/FinanceAppGo/messageMicroservice/config"
 	"github.com/TudorEsan/FinanceAppGo/messageMicroservice/helpers"
+	"github.com/hashicorp/go-hclog"
 	ampq "github.com/rabbitmq/amqp091-go"
 )
+
+var l = hclog.Default().Named("MessagingClient")
 
 type IMessagingClient interface {
 	Subscribe(SubscribeOpt)
@@ -61,7 +64,9 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 		opt.AutoDelete,   // auto-deleted
 		opt.Internal,     // internal
 		opt.NoWait,       // no-wait
-		nil,              // arguments
+		ampq.Table{
+			"x-message-ttl": 60_000,
+		},
 	)
 
 	q, err := ch.QueueDeclare(
@@ -70,7 +75,9 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 		opt.QueueOptions.AutoDelete, // delete when unused
 		opt.QueueOptions.Exclusive,  // exclusive
 		opt.QueueOptions.NoWait,     // no-wait
-		nil,                         // arguments
+		ampq.Table{
+			"x-message-ttl": 60_000,
+		},
 	)
 
 	for _, routingKey := range opt.RoutingKeys {
@@ -101,7 +108,8 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 		helpers.FailOnError(err, "Failed to register a consumer")
 	}
 
-	subscribeToMessages(msg, opt.HandlerFunc)
+	go subscribeToMessages(msg, opt.HandlerFunc)
+	l.Info(fmt.Sprintf("Subscribed to %s", opt.ExchangeName))
 
 }
 

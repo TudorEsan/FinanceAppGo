@@ -28,6 +28,10 @@ func main() {
 	emailClient := sendgrid.NewSendClient(conf.SENDGRID_API_KEY)
 	emailService := service.NewEmailService(emailClient)
 
+	stop := make(chan bool)
+
 	emailService.StartConsuming()
+
+	<-stop
 
 }

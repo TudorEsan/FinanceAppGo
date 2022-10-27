@@ -20,6 +20,8 @@ func GetLast2Records(recordCollection *mongo.Collection,userID primitive.ObjectI
 	records = make([]models.Record, 0, 2)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
+	l.Info("Getting last 2 records", "userID", userID)
+
 	curr, err := recordCollection.Find(ctx, bson.M{"userId": userID}, options.Find().SetSort(bson.M{"date": -1}).SetLimit(2))
 	if err != nil {
 		return

@@ -41,13 +41,13 @@ type Diversification struct {
 type Stock struct {
 	Symbol   string   `json:"symbol" bson:"symbol" binding:"required"`
 	Shares   float32  `json:"shares,omitempty" bson:"shares"`
-	ValuedAt *float32 `json:"valuedAt" bson:"valuedAt" binding:"required,min=0"`
+	ValuedAt *float32 `json:"valuedAt" bson:"valuedAt" binding:"required,gt=0"`
 }
 
 type Crypto struct {
 	Symbol   string   `json:"symbol" bson:"symbol" binding:"required"`
 	Coins    float32  `json:"coins,omitempty" bson:"coins"`
-	ValuedAt *float32 `json:"valuedAt" bson:"valuedAt" binding:"required,min=0"`
+	ValuedAt *float32 `json:"valuedAt" bson:"valuedAt" binding:"required,gt=0"`
 }
 
 type Stocks []Stock

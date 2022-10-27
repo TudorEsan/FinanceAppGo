@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/TudorEsan/FinanceAppGo/server/database"
 	"github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"github.com/hashicorp/go-hclog"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,7 +20,7 @@ type OverviewController struct {
 
 func NewOverviewController(l hclog.Logger, client *mongo.Client) *OverviewController {
 	ll := l.Named("OverviewController")
-	recordCollection := client.Database("financeapp").Collection("records")
+	recordCollection := database.OpenCollection(client, "records")
 	return &OverviewController{ll, recordCollection}
 }
 

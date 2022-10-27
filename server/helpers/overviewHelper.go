@@ -17,7 +17,7 @@ func GetCurrentYear() int {
 }
 
 func GetLast2Records(recordCollection *mongo.Collection,userID primitive.ObjectID) (records []models.Record, err error) {
-	records = make([]models.Record, 0, 2)
+	records = make([]models.Record, 0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	l.Info("Getting last 2 records", "userID", userID)
@@ -29,6 +29,7 @@ func GetLast2Records(recordCollection *mongo.Collection,userID primitive.ObjectI
 	for curr.Next(ctx) {
 		var auxRecord models.Record
 		err = curr.Decode(&auxRecord)
+		l.Info("Decoding record", "record", auxRecord)
 		if err != nil {
 			return
 		}

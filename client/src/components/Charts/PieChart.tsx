@@ -59,7 +59,7 @@ export const MyPie = ({
         sortByValue
         enableArcLinkLabels={enableArcLinkLabels}
         arcLabel={(d) => `${d.value}%`}
-        arcLabelsSkipAngle={10}
+        arcLabelsSkipAngle={20}
         arcLinkLabelsTextColor={{
           from: "color",
           modifiers: [["brighter", 0.8]],

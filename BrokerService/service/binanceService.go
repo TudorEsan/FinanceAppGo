@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/adshao/go-binance/v2"
+	"github.com/go-redis/redis/v8"
 	"github.com/hashicorp/go-hclog"
 )
 
@@ -21,13 +22,15 @@ type IBinanceService interface {
 type BinanceService struct {
 	client *binance.Client
 	l      hclog.Logger
+	redis  *redis.Client
 }
 
-func NewBinanceService(apiKey, secretKey string) IBinanceService {
+func NewBinanceService(apiKey, secretKey string, redisClient *redis.Client) IBinanceService {
 	binanceClient := binance.NewClient(apiKey, secretKey)
 	return &BinanceService{
 		client: binanceClient,
 		l:      hclog.L().Named("BinanceService"),
+		redis:  redisClient,
 	}
 }
 
@@ -43,6 +46,10 @@ func (a Asset) String() string {
 }
 
 func (s *BinanceService) GetPrice(ticker string) (price float64, err error) {
+	if price, err = s.redis.Get(context.Background(), ticker).Float64(); err == nil {
+		s.l.Info("Got price from cache", "ticker", ticker, "price", price)
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	tickerPrice, err := s.client.NewListPricesService().Symbol(ticker).Do(ctx)
@@ -50,6 +57,7 @@ func (s *BinanceService) GetPrice(ticker string) (price float64, err error) {
 		return 0, err
 	}
 	price, err = strconv.ParseFloat(tickerPrice[0].Price, 64)
+	s.redis.Set(context.Background(), ticker, price, 12*time.Hour)
 	return
 }
 
@@ -60,12 +68,19 @@ func (s *Asset) AddPrice(wg *sync.WaitGroup) {
 func (s *BinanceService) GetStakingAssets() (assets map[string]*Asset, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	staking, err := s.client.NewStakingProductPositionService().Product("STAKING").Do(ctx)
+	lockedStaking, err := s.client.NewStakingProductPositionService().Product("STAKING").Do(ctx)
 	if err != nil {
 		panic(err)
 	}
+	flexibleStaking, err := s.client.NewStakingProductPositionService().Product("F_DEFI").Do(ctx)
+	if err != nil {
+		panic(err)
+	}
+	s.l.Info("Flexible staking", "assets", flexibleStaking)
+
 	assets = make(map[string]*Asset)
-	for _, asset := range *staking {
+	for _, asset := range *lockedStaking {
+		s.l.Info("Staking asset", "asset", asset.Asset, "amount", asset.Amount)
 		assetAmount, err := strconv.ParseFloat(asset.Amount, 64)
 		if err != nil {
 			s.l.Error("Error parsing asset amount", "error", err)
@@ -160,10 +175,9 @@ func (s *BinanceService) GetAssets() ([]Asset, error) {
 	if err != nil {
 		return nil, err
 	}
-	assets := make([]Asset, 0, len(walletAssets)+len(stakingAssets))
+	assets := make([]Asset, 0, len(walletAssets) + len(stakingAssets))
 	for _, asset := range walletAssets {
 		if a, ok := stakingAssets[asset.Name]; ok {
-			asset.Amount += a.Amount
 			assets = append(assets, Asset{
 				Name:   asset.Name,
 				Amount: asset.Amount + a.Amount,

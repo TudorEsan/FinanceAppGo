@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/TudorEsan/FinanceAppGo/server/database"
+	"github.com/TudorEsan/FinanceAppGo/server/common"
 	"github.com/TudorEsan/FinanceAppGo/server/routes"
 	"github.com/hashicorp/go-hclog"
 
@@ -19,6 +20,7 @@ func main() {
 
 	// dependencies
 	router := gin.Default()
+	messageClient := common.NewMessagingClient()
 	l := hclog.Default()
 	l.Info(fmt.Sprintf("Starting %s", appName))
 	client := database.DbInstace()
@@ -44,7 +46,7 @@ func main() {
 	netWorthRoutes := api.Group("records")
 	authRoutes := api.Group("auth")
 	base := api.Group("")
-	routes.AuthRoutes(authRoutes, l, client)
+	routes.AuthRoutes(authRoutes, l, client, messageClient)
 	routes.OverviewRoutes(overviewRoutes, l, client)
 	routes.NetWorthRoutes(netWorthRoutes, client, l)
 	routes.VerifyRoutes(base, client, l)

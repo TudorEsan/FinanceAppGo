@@ -3,9 +3,11 @@ package controller
 // func Signup
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/TudorEsan/FinanceAppGo/server/common"
 	"github.com/TudorEsan/FinanceAppGo/server/database"
 	helper "github.com/TudorEsan/FinanceAppGo/server/helpers"
 	"github.com/TudorEsan/FinanceAppGo/server/models"
@@ -22,14 +24,15 @@ import (
 var validate = validator.New()
 
 type AuthController struct {
-	l              hclog.Logger
-	userCollection *mongo.Collection
+	l               hclog.Logger
+	userCollection  *mongo.Collection
+	messagingClient *common.IMessagingClient
 }
 
-func NewAuthController(l hclog.Logger, client *mongo.Client) *AuthController {
+func NewAuthController(l hclog.Logger, client *mongo.Client, messagingClient *common.IMessagingClient) *AuthController {
 	collection := database.OpenCollection(client, "user")
 	ll := l.Named("AuthController")
-	return &AuthController{ll, collection}
+	return &AuthController{ll, collection, messagingClient}
 }
 
 func (controller *AuthController) saveUser(ctx context.Context, user models.User) error {
@@ -97,6 +100,10 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 			return
 		}
 		controller.l.Info("Verification email sent")
+		err = controller.messagingClient.Publish("shared", "user.created", []byte(fmt.Sprintf(`"id": "%s"`, userForDb.ID.Hex())))
+		if err != nil {
+			controller.l.Error("Could not publish message", err)
+		}
 
 		c.JSON(http.StatusOK, userForDb)
 	}

@@ -8,6 +8,8 @@ require (
 	go.mongodb.org/mongo-driver v1.10.2
 )
 
+require github.com/rabbitmq/amqp091-go v1.5.0 // indirect
+
 require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/gin-contrib/cors v1.4.0

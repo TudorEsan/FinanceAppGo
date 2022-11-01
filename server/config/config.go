@@ -29,6 +29,7 @@ type Config struct {
 	SmtpUsername string
 	SmtpPassword string
 	DomainName   string
+	RABBIT_URL   string
 }
 
 func getConfig() *Config {

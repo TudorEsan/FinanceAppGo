@@ -15,7 +15,7 @@ var l = hclog.Default().Named("MessagingClient")
 
 type IMessagingClient interface {
 	Subscribe(SubscribeOpt)
-	Publish(exchangeName, routingKey string, body []byte) error
+	Publish(exchangeName, routingKey string, body any) error
 }
 
 type MessagingClient struct {
@@ -65,16 +65,17 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 	if err != nil {
 		return err
 	}
+	l.Info("body", string(json))
 
 	ch, err := client.conn.Channel()
 	if err != nil {
-
+		return err
 	}
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
 		exchangeName, // name
-		"topic",      // type
+		"direct",     // type
 		true,         // durable
 		false,        // auto-deleted
 		false,        // internal
@@ -82,7 +83,7 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 		nil,          // arguments
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to declare an exchange: %s", err)
+		return fmt.Errorf("failed to declare an exchange: %s", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -94,11 +95,12 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 		false,        // mandatory
 		false,        // immediate
 		ampq.Publishing{
-			ContentType: "application/json",
-			Body:        json,
+			ContentType:  "application/json",
+			Body:         json,
+			DeliveryMode: ampq.Persistent,
 		})
 	if err != nil {
-		return fmt.Errorf("Failed to publish a message: %v", err)
+		return fmt.Errorf("failed to publish a message: %v", err)
 	}
 	return nil
 }
@@ -116,9 +118,7 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 		opt.AutoDelete,   // auto-deleted
 		opt.Internal,     // internal
 		opt.NoWait,       // no-wait
-		ampq.Table{
-			"x-message-ttl": 60_000,
-		},
+		nil,              // arguments
 	)
 
 	q, err := ch.QueueDeclare(

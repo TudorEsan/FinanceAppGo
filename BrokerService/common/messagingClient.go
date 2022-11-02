@@ -15,7 +15,7 @@ var l = hclog.Default().Named("MessagingClient")
 
 type IMessagingClient interface {
 	Subscribe(SubscribeOpt)
-	Publish(exchangeName, routingKey string, body []byte) error
+	Publish(exchangeName, routingKey string, body any) error
 }
 
 type MessagingClient struct {
@@ -31,7 +31,7 @@ func failOnError(err error, msg string) {
 func NewMessagingClient() *MessagingClient {
 	conf := config.New()
 
-if conf.RabbitUrl == "" {
+	if conf.RabbitUrl == "" {
 		panic("RabbitMQ URL is not set")
 	}
 
@@ -46,20 +46,9 @@ type SubscribeOpt struct {
 	ExchangeName string
 	ExchangeType string
 	RoutingKeys  []string
-	Internal     bool
-	NoWait       bool
-	AutoDelete   bool
-	QueueOptions QueueOpt
+	QueueName		string
 	HandlerFunc  func(ampq.Delivery)
 }
-type QueueOpt struct {
-	QueueName  string
-	Durable    bool
-	AutoDelete bool
-	Exclusive  bool
-	NoWait     bool
-}
-
 func (client *MessagingClient) Publish(exchangeName, routingKey string, body any) error {
 	json, err := json.Marshal(body)
 	if err != nil {
@@ -82,7 +71,7 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 		nil,          // arguments
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to declare an exchange: %s", err)
+		return fmt.Errorf("failed to declare an exchange: %s", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -109,35 +98,37 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 		failOnError(err, "Failed to open a channel")
 	}
 
-	ch.ExchangeDeclare(
+	err = ch.ExchangeDeclare(
 		opt.ExchangeName, // name
 		opt.ExchangeType, // type
 		true,             // durable
-		opt.AutoDelete,   // auto-deleted
-		opt.Internal,     // internal
-		opt.NoWait,       // no-wait
-		ampq.Table{
-			"x-message-ttl": 60_000,
-		},
+		false,            // auto-deleted
+		false,            // internal
+		false,            // no-wait
+		nil,
 	)
+	if err != nil {
+		failOnError(err, "Failed to declare an exchange")
+	}
 
 	q, err := ch.QueueDeclare(
-		opt.QueueOptions.QueueName,  // name
-		opt.QueueOptions.Durable,    // durable
-		opt.QueueOptions.AutoDelete, // delete when unused
-		opt.QueueOptions.Exclusive,  // exclusive
-		opt.QueueOptions.NoWait,     // no-wait
-		ampq.Table{
-			"x-message-ttl": 60_000,
-		},
+		opt.QueueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
+	if err != nil {
+		failOnError(err, "Failed to declare a queue")
+	}
 
 	for _, routingKey := range opt.RoutingKeys {
 		err := ch.QueueBind(
-			"",               // queue name
+			q.Name,           // queue name
 			routingKey,       // routing key
 			opt.ExchangeName, // exchange
-			false,
+			false,            // no-wait
 			nil,
 		)
 		failOnError(err, fmt.Sprintf("Failed to bind a queue: %s, routing: %s", q.Name, routingKey))
@@ -167,6 +158,6 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 
 func subscribeToMessages(msg <-chan ampq.Delivery, handler func(ampq.Delivery)) {
 	for d := range msg {
-		handler(d)
+		go handler(d)
 	}
 }

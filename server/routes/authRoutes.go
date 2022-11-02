@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthRoutes(incomingRoutes *gin.RouterGroup, l hclog.Logger, client *mongo.Client, messagingClient *common.IMessagingClient) {
+func AuthRoutes(incomingRoutes *gin.RouterGroup, l hclog.Logger, client *mongo.Client, messagingClient common.IMessagingClient) {
 
 	c := controller.NewAuthController(l, client, messagingClient)
 

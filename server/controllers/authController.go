@@ -3,7 +3,6 @@ package controller
 // func Signup
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -26,10 +25,10 @@ var validate = validator.New()
 type AuthController struct {
 	l               hclog.Logger
 	userCollection  *mongo.Collection
-	messagingClient *common.IMessagingClient
+	messagingClient common.IMessagingClient
 }
 
-func NewAuthController(l hclog.Logger, client *mongo.Client, messagingClient *common.IMessagingClient) *AuthController {
+func NewAuthController(l hclog.Logger, client *mongo.Client, messagingClient common.IMessagingClient) *AuthController {
 	collection := database.OpenCollection(client, "user")
 	ll := l.Named("AuthController")
 	return &AuthController{ll, collection, messagingClient}
@@ -70,11 +69,11 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 		}
 
 		// insert user in the db
-		err = controller.saveUser(ctx, userForDb)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			return
-		}
+		// err = controller.saveUser(ctx, userForDb)
+		// if err != nil {
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		// 	return
+		// }
 
 		// generate all the auth tokens
 		jwt, refreshToken, err := helper.GenerateTokens(userForDb)
@@ -100,7 +99,11 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 			return
 		}
 		controller.l.Info("Verification email sent")
-		err = controller.messagingClient.Publish("shared", "user.created", []byte(fmt.Sprintf(`"id": "%s"`, userForDb.ID.Hex())))
+		type Payload struct {
+			Id string `json:"id"`
+		}
+		payload := Payload{userForDb.ID.Hex()}
+		err = controller.messagingClient.Publish("user", "created", payload)
 		if err != nil {
 			controller.l.Error("Could not publish message", err)
 		}

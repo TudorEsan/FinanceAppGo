@@ -41,12 +41,18 @@ func getConfig() *Config {
 	if os.Getenv("MONGO_URL") != "" {
 		mongoUrl = os.Getenv("MONGO_URL")
 	}
+
+	if os.Getenv("RABBIT_URL") == "" {
+		panic("RabbitMQ URL is not set")
+	}
+
 	return &Config{
 		MongoUrl:     mongoUrl,
 		JwtSecret:    jwtSecret,
 		SmtpUsername: os.Getenv("SMTP_USERNAME"),
 		SmtpPassword: os.Getenv("SMTP_PASSWORD"),
 		DomainName:   os.Getenv("DOMAIN_NAME"),
+		RABBIT_URL:   os.Getenv("RABBIT_URL"),
 	}
 }
 

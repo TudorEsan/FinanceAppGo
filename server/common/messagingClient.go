@@ -44,20 +44,9 @@ func NewMessagingClient() *MessagingClient {
 
 type SubscribeOpt struct {
 	ExchangeName string
-	ExchangeType string
 	RoutingKeys  []string
-	Internal     bool
-	NoWait       bool
-	AutoDelete   bool
-	QueueOptions QueueOpt
+	QueueName    string
 	HandlerFunc  func(ampq.Delivery)
-}
-type QueueOpt struct {
-	QueueName  string
-	Durable    bool
-	AutoDelete bool
-	Exclusive  bool
-	NoWait     bool
 }
 
 func (client *MessagingClient) Publish(exchangeName, routingKey string, body any) error {
@@ -65,7 +54,6 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 	if err != nil {
 		return err
 	}
-	l.Info("body", string(json))
 
 	ch, err := client.conn.Channel()
 	if err != nil {
@@ -75,7 +63,7 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 
 	err = ch.ExchangeDeclare(
 		exchangeName, // name
-		"direct",     // type
+		"topic",      // type
 		true,         // durable
 		false,        // auto-deleted
 		false,        // internal
@@ -95,9 +83,8 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 		false,        // mandatory
 		false,        // immediate
 		ampq.Publishing{
-			ContentType:  "application/json",
-			Body:         json,
-			DeliveryMode: ampq.Persistent,
+			ContentType: "application/json",
+			Body:        json,
 		})
 	if err != nil {
 		return fmt.Errorf("failed to publish a message: %v", err)
@@ -111,33 +98,37 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 		failOnError(err, "Failed to open a channel")
 	}
 
-	ch.ExchangeDeclare(
+	err = ch.ExchangeDeclare(
 		opt.ExchangeName, // name
-		opt.ExchangeType, // type
+		"topic",          // type
 		true,             // durable
-		opt.AutoDelete,   // auto-deleted
-		opt.Internal,     // internal
-		opt.NoWait,       // no-wait
-		nil,              // arguments
+		false,            // auto-deleted
+		false,            // internal
+		false,            // no-wait
+		nil,
 	)
+	if err != nil {
+		failOnError(err, "Failed to declare an exchange")
+	}
 
 	q, err := ch.QueueDeclare(
-		opt.QueueOptions.QueueName,  // name
-		opt.QueueOptions.Durable,    // durable
-		opt.QueueOptions.AutoDelete, // delete when unused
-		opt.QueueOptions.Exclusive,  // exclusive
-		opt.QueueOptions.NoWait,     // no-wait
-		ampq.Table{
-			"x-message-ttl": 60_000,
-		},
+		opt.QueueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
+	if err != nil {
+		failOnError(err, "Failed to declare a queue")
+	}
 
 	for _, routingKey := range opt.RoutingKeys {
 		err := ch.QueueBind(
-			"",               // queue name
+			q.Name,           // queue name
 			routingKey,       // routing key
 			opt.ExchangeName, // exchange
-			false,
+			false,            // no-wait
 			nil,
 		)
 		failOnError(err, fmt.Sprintf("Failed to bind a queue: %s, routing: %s", q.Name, routingKey))
@@ -151,7 +142,7 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 		q.Name, // name,
 		"",     // consumer
 		false,  // auto-ack
-		false,  // exclusive
+		true,   // exclusive
 		false,  // no-local
 		false,  // no-wait
 		nil,    // args
@@ -167,6 +158,6 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 
 func subscribeToMessages(msg <-chan ampq.Delivery, handler func(ampq.Delivery)) {
 	for d := range msg {
-		handler(d)
+		go handler(d)
 	}
 }

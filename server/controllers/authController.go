@@ -103,7 +103,7 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 			Id string `json:"id"`
 		}
 		payload := Payload{userForDb.ID.Hex()}
-		err = controller.messagingClient.Publish("user", "created", payload)
+		err = controller.messagingClient.Publish("portofolio-server", "user.created", payload)
 		if err != nil {
 			controller.l.Error("Could not publish message", err)
 		}

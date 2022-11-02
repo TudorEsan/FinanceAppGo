@@ -1,12 +1,17 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/common"
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/database"
+	"github.com/TudorEsan/FinanceAppGo/BrokerService/models"
 	"github.com/hashicorp/go-hclog"
 	"github.com/rabbitmq/amqp091-go"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -26,30 +31,99 @@ func NewUserController(l hclog.Logger, mongoClient *mongo.Client, rabbitMq commo
 	return &UserController{mongoC, l, rabbitMq}
 }
 
-type UserCreatedPayload struct {
+type IdPayload struct {
 	Id string `json:"id"`
 }
 
+func (c *UserController) createUser(id primitive.ObjectID) error {
+	newUser := models.User{
+		Id: id,
+		Keys: models.BinanceKeys{
+			ApiKey:    "",
+			SecretKey: "",
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_, err := c.mongoCollection.InsertOne(ctx, newUser)
+	return err
+}
+
+func (c *UserController) deleteUser(id primitive.ObjectID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_, err := c.mongoCollection.DeleteOne(ctx, bson.M{"_id": id})
+	return err
+}
+
 func (c *UserController) handleUserCreated(delivery amqp091.Delivery) {
-	var payload UserCreatedPayload
+	var payload IdPayload
+	err := json.Unmarshal(delivery.Body, &payload)
+	if err != nil {
+		c.l.Error("Could not unmarshal payload", "error", err, "payload", string(delivery.Body))
+		delivery.Reject(false)
+		return
+	}
+	c.l.Info("Recieved user created", "ID", payload.Id)
+	id, err := primitive.ObjectIDFromHex(payload.Id)
+	if err != nil {
+		c.l.Error("Could not parse id", "error", err, "id", payload.Id)
+		delivery.Reject(false)
+		return
+	}
+	err = c.createUser(id)
+	if err != nil {
+		c.l.Error("Could not create user", "error", err, "id", payload.Id)
+		delivery.Reject(false)
+		return
+	}
+	delivery.Ack(false)
+}
+
+func (c *UserController) handleUserDeleted(delivery amqp091.Delivery) {
+	var payload IdPayload
 	err := json.Unmarshal(delivery.Body, &payload)
 	if err != nil {
 		c.l.Error("Could not unmarshal payload", "error", err, "payload", string(delivery.Body))
 		return
 	}
-	c.l.Info("User created", "ID", payload.Id)
+	c.l.Info("User deleted", "ID", payload.Id)
+	id, err := primitive.ObjectIDFromHex(payload.Id)
+	if err != nil {
+		c.l.Error("Could not parse id", "error", err, "id", payload.Id)
+		delivery.Reject(false)
+		return
+	}
+	err = c.deleteUser(id)
+	if err != nil {
+		c.l.Error("Could not delete user", "error", err, "id", payload.Id)
+		delivery.Reject(false)
+		return
+	}
+
 	delivery.Ack(false)
+}
+
+func (c *UserController) handleUserAction(delivery amqp091.Delivery) {
+	switch delivery.RoutingKey {
+	case "user.created":
+		c.handleUserCreated(delivery)
+	case "user.deleted":
+		c.handleUserDeleted(delivery)
+	default:
+		c.l.Error("Unknown routing key", "routingKey", delivery.RoutingKey)
+		delivery.Reject(false)
+	}
+
 }
 
 func (c *UserController) ListenForUserCreated() {
 	opt := common.SubscribeOpt{
-		ExchangeName: "user",
-		ExchangeType: "direct",
-		RoutingKeys: []string{"created"},
-		QueueName:   "broker-service-user-created2",
-		HandlerFunc: c.handleUserCreated,
+		ExchangeName: "portofolio-server",
+		RoutingKeys:  []string{"user.*"},
+		QueueName:    "broker-service-user-created",
+		HandlerFunc:  c.handleUserAction,
 	}
-
 	c.rabbitClient.Subscribe(opt)
 }
 

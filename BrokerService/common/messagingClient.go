@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/config"
 	"github.com/hashicorp/go-hclog"
 	ampq "github.com/rabbitmq/amqp091-go"
@@ -44,11 +43,11 @@ func NewMessagingClient() *MessagingClient {
 
 type SubscribeOpt struct {
 	ExchangeName string
-	ExchangeType string
 	RoutingKeys  []string
-	QueueName		string
+	QueueName    string
 	HandlerFunc  func(ampq.Delivery)
 }
+
 func (client *MessagingClient) Publish(exchangeName, routingKey string, body any) error {
 	json, err := json.Marshal(body)
 	if err != nil {
@@ -57,7 +56,7 @@ func (client *MessagingClient) Publish(exchangeName, routingKey string, body any
 
 	ch, err := client.conn.Channel()
 	if err != nil {
-
+		return err
 	}
 	defer ch.Close()
 
@@ -100,7 +99,7 @@ func (m *MessagingClient) Subscribe(opt SubscribeOpt) {
 
 	err = ch.ExchangeDeclare(
 		opt.ExchangeName, // name
-		opt.ExchangeType, // type
+		"topic",          // type
 		true,             // durable
 		false,            // auto-deleted
 		false,            // internal

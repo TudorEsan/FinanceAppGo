@@ -26,7 +26,7 @@ func init() {
 
 type Config struct {
 	MongoUrl      string
-	EncryptionKey string
+	EncryptionKey []byte
 	MongoTimeout  time.Duration
 	RabbitUrl     string
 }
@@ -46,7 +46,7 @@ func getConfig() *Config {
 
 	return &Config{
 		MongoUrl:      mongoUrl,
-		EncryptionKey: os.Getenv("ENCRYPTION_KEY"),
+		EncryptionKey: []byte(os.Getenv("ENCRYPTION_KEY")),
 		MongoTimeout:  mongoTimeout,
 		RabbitUrl:     os.Getenv("RABBIT_URL"),
 	}

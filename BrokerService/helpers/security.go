@@ -9,8 +9,10 @@ import (
 	"io"
 )
 
+
 func Encrypt(key []byte, text string) string {
 	plaintext := []byte(text)
+	
 
 	block, err := aes.NewCipher(key)
 	if err != nil {

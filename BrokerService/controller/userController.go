@@ -38,7 +38,7 @@ type IdPayload struct {
 func (c *UserController) createUser(id primitive.ObjectID) error {
 	newUser := models.User{
 		Id: id,
-		Keys: models.BinanceKeys{
+		BinanceKeys: models.BinanceKeys{
 			ApiKey:    "",
 			SecretKey: "",
 		},

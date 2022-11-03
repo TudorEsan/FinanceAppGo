@@ -69,11 +69,11 @@ func (controller *AuthController) SignupHandler() gin.HandlerFunc {
 		}
 
 		// insert user in the db
-		// err = controller.saveUser(ctx, userForDb)
-		// if err != nil {
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		// 	return
-		// }
+		err = controller.saveUser(ctx, userForDb)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
 
 		// generate all the auth tokens
 		jwt, refreshToken, err := helper.GenerateTokens(userForDb)

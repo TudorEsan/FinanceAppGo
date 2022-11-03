@@ -11,8 +11,8 @@ import (
 
 func NetWorthRoutes(incomingRoutes *gin.RouterGroup, client *mongo.Client, l hclog.Logger) {
 	c := controller.NewRecordController(l, client)
-	authMiddlewareController := middlewares.NewAuthMiddlewareController(l)
-	incomingRoutes.Use(authMiddlewareController.VerifyAuth())
+	authMiddleware := middlewares.NewAuthMiddlewareController(l)
+	incomingRoutes.Use(authMiddleware.VerifyAuth())
 	incomingRoutes.POST("", c.AddRecord())
 	incomingRoutes.DELETE(":id", c.DeleteRecord())
 	incomingRoutes.GET(":id", c.GetRecord())

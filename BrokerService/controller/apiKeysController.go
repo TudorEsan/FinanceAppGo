@@ -7,10 +7,10 @@ import (
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/database"
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/helpers"
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/models"
+	sharedhelpers "github.com/TudorEsan/shared-finance-app-golang/sharedHelpers"
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/go-hclog"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -56,8 +56,7 @@ func (controller *ApiKeyController) SetBinanceKeys() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var keys models.BinanceKeys
 
-		// id, err := sharedhelpers.GetUserIdFromCtx(c)
-		idS, err := "63629d3c66553cad887b9963", error(nil)
+		id, err := sharedhelpers.GetUserIdFromCtx(c)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"message": "Could not get username ",
@@ -79,12 +78,6 @@ func (controller *ApiKeyController) SetBinanceKeys() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), controller.config.MongoTimeout)
 		defer cancel()
 
-		id, err := primitive.ObjectIDFromHex(idS)
-		if err != nil {
-			controller.l.Error("Could not convert id to object id", err)
-			c.JSON(400, gin.H{"message": err.Error()})
-			return
-		}
 		update := bson.M{
 			"$set": bson.M{
 				"binanceKeys": bson.M{

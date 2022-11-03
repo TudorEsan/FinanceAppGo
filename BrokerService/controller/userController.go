@@ -7,7 +7,9 @@ import (
 
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/common"
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/database"
+	"github.com/TudorEsan/FinanceAppGo/BrokerService/helpers"
 	"github.com/TudorEsan/FinanceAppGo/BrokerService/models"
+	"github.com/TudorEsan/FinanceAppGo/BrokerService/service"
 	"github.com/hashicorp/go-hclog"
 	"github.com/rabbitmq/amqp091-go"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,19 +18,22 @@ import (
 )
 
 type IUserController interface {
+	StartUpdatingUserAssets()
 	StartConsuming()
 }
 
 type UserController struct {
-	mongoCollection *mongo.Collection
-	l               hclog.Logger
-	rabbitClient    common.IMessagingClient
+	userCollection   *mongo.Collection
+	l                hclog.Logger
+	rabbitClient     common.IMessagingClient
+	assetsCollection *mongo.Collection
 }
 
 func NewUserController(l hclog.Logger, mongoClient *mongo.Client, rabbitMq common.IMessagingClient) IUserController {
 	l.Named("UserController")
-	mongoC := database.OpenCollection(mongoClient, "users")
-	return &UserController{mongoC, l, rabbitMq}
+	userCollection := database.OpenCollection(mongoClient, "users")
+	assetsCollection := database.OpenCollection(mongoClient, "assets")
+	return &UserController{userCollection, l, rabbitMq, assetsCollection}
 }
 
 type IdPayload struct {
@@ -45,14 +50,14 @@ func (c *UserController) createUser(id primitive.ObjectID) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_, err := c.mongoCollection.InsertOne(ctx, newUser)
+	_, err := c.userCollection.InsertOne(ctx, newUser)
 	return err
 }
 
 func (c *UserController) deleteUser(id primitive.ObjectID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_, err := c.mongoCollection.DeleteOne(ctx, bson.M{"_id": id})
+	_, err := c.userCollection.DeleteOne(ctx, bson.M{"_id": id})
 	return err
 }
 
@@ -130,4 +135,56 @@ func (c *UserController) ListenForUserCreated() {
 func (c *UserController) StartConsuming() {
 	c.l.Info("Listening for messages")
 	go c.ListenForUserCreated()
+}
+
+func (c *UserController) StartUpdatingUserAssets() {
+	c.l.Info("Starting updating user assets")
+	// go func() {
+	// 	ticker := time.NewTicker(2 * time.Minute)
+	// 	for {
+	// 		<-ticker.C
+	c.l.Info("Updating user assets")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	cursor, err := c.userCollection.Find(ctx, bson.M{})
+	if err != nil {
+		c.l.Error("Could not get users", "error", err)
+		return
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var user models.User
+		err := cursor.Decode(&user)
+		if err != nil {
+			c.l.Error("Could not decode user", "error", err)
+			continue
+		}
+		decryptedSecret := helpers.Decrypt(user.BinanceKeys.SecretKey)
+		decryptedApiKey := helpers.Decrypt(user.BinanceKeys.ApiKey)
+		c.l.Info("decrypted", "secret", decryptedSecret, "api", decryptedApiKey)
+		binanceS := service.NewBinanceService(decryptedApiKey, decryptedSecret)
+		assets, err := binanceS.GetAssets()
+		if err != nil {
+			c.l.Error("Could not get assets", "error", err)
+			continue
+		}
+		// update user assets
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		userAssets := models.UserAssets{
+			Assets: assets,
+			Date:   time.Now(),
+			Id:     primitive.NewObjectID(),
+			UserId: user.Id,
+		}
+		_, err = c.userCollection.InsertOne(ctx, userAssets)
+		if err != nil {
+			c.l.Error("Could not update user assets", "error", err)
+			continue
+		}
+	}
+	// 	}
+	// }()
 }

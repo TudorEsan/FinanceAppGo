@@ -16,7 +16,6 @@ import (
 )
 
 type IApiKeyController interface {
-	GetBinanceKeys(primitive.ObjectID) (models.BinanceKeys, error)
 	SetBinanceKeys() gin.HandlerFunc
 }
 
@@ -53,23 +52,6 @@ func NewApiKeyController(config *config.Config, l hclog.Logger, mongoClient *mon
 // 	}
 // }
 
-func (controller *ApiKeyController) GetBinanceKeys(userId primitive.ObjectID) (models.BinanceKeys, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), controller.config.MongoTimeout)
-	defer cancel()
-	var user models.User
-	err := controller.mongoCol.FindOne(ctx, bson.M{"_id": userId}).Decode(&user)
-	if err != nil {
-		controller.l.Error("Could not find keys", err)
-		return models.BinanceKeys{}, err
-	}
-	decryptedSecretKey := helpers.Decrypt(controller.config.EncryptionKey, user.BinanceKeys.SecretKey)
-	decryptedApiKey := helpers.Decrypt(controller.config.EncryptionKey, user.BinanceKeys.ApiKey)
-	return models.BinanceKeys{
-		ApiKey:    decryptedApiKey,
-		SecretKey: decryptedSecretKey,
-	}, nil
-}
-
 func (controller *ApiKeyController) SetBinanceKeys() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var keys models.BinanceKeys
@@ -90,8 +72,8 @@ func (controller *ApiKeyController) SetBinanceKeys() gin.HandlerFunc {
 		}
 
 		// encrypt the keys
-		encryptedApiKey := helpers.Encrypt([]byte(controller.config.EncryptionKey), keys.ApiKey)
-		encryptedSecretKey := helpers.Encrypt([]byte(controller.config.EncryptionKey), keys.SecretKey)
+		encryptedApiKey := helpers.Encrypt(keys.ApiKey)
+		encryptedSecretKey := helpers.Encrypt(keys.SecretKey)
 		var user models.User
 
 		ctx, cancel := context.WithTimeout(context.Background(), controller.config.MongoTimeout)

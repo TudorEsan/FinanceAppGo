@@ -2,21 +2,22 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/TudorEsan/FinanceAppGo/BrokerService/config"
+	"github.com/TudorEsan/FinanceAppGo/BrokerService/models"
 	"github.com/adshao/go-binance/v2"
 	"github.com/go-redis/redis/v8"
 	"github.com/hashicorp/go-hclog"
 )
 
 type IBinanceService interface {
-	GetWalletAssets() ([]Asset, error)
+	GetWalletAssets() ([]models.Asset, error)
 	GetPrice(ticker string) (price float64, err error)
-	GetStakingAssets() (assets map[string]*Asset, err error)
-	GetAssets() ([]Asset, error)
+	GetStakingAssets() (assets map[string]*models.Asset, err error)
+	GetAssets() ([]models.Asset, error)
 }
 
 type BinanceService struct {
@@ -25,24 +26,19 @@ type BinanceService struct {
 	redis  *redis.Client
 }
 
-func NewBinanceService(apiKey, secretKey string, redisClient *redis.Client) IBinanceService {
+func NewBinanceService(apiKey, secretKey string) IBinanceService {
+	conf := config.New()
 	binanceClient := binance.NewClient(apiKey, secretKey)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     conf.RedisUrl,
+		Password: conf.RedisPassword, // no password set
+		DB:       0,                  // use default DB
+	})
 	return &BinanceService{
 		client: binanceClient,
 		l:      hclog.L().Named("BinanceService"),
 		redis:  redisClient,
 	}
-}
-
-type Asset struct {
-	Name   string
-	Amount float64
-	Price  float64
-	Worth  float64
-}
-
-func (a Asset) String() string {
-	return fmt.Sprintf("%s: %f (%f)", a.Name, a.Amount, a.Amount*a.Price)
 }
 
 func (s *BinanceService) GetPrice(ticker string) (price float64, err error) {
@@ -61,11 +57,7 @@ func (s *BinanceService) GetPrice(ticker string) (price float64, err error) {
 	return
 }
 
-func (s *Asset) AddPrice(wg *sync.WaitGroup) {
-
-}
-
-func (s *BinanceService) GetStakingAssets() (assets map[string]*Asset, err error) {
+func (s *BinanceService) GetStakingAssets() (assets map[string]*models.Asset, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	lockedStaking, err := s.client.NewStakingProductPositionService().Product("STAKING").Do(ctx)
@@ -78,7 +70,7 @@ func (s *BinanceService) GetStakingAssets() (assets map[string]*Asset, err error
 	}
 	s.l.Info("Flexible staking", "assets", flexibleStaking)
 
-	assets = make(map[string]*Asset)
+	assets = make(map[string]*models.Asset)
 	for _, asset := range *lockedStaking {
 		s.l.Info("Staking asset", "asset", asset.Asset, "amount", asset.Amount)
 		assetAmount, err := strconv.ParseFloat(asset.Amount, 64)
@@ -95,7 +87,7 @@ func (s *BinanceService) GetStakingAssets() (assets map[string]*Asset, err error
 			assets[asset.Asset].Amount += assetAmount
 		} else {
 			s.l.Info("Adding new asset", "asset", asset.Asset, "amount", assetAmount)
-			assets[asset.Asset] = &Asset{
+			assets[asset.Asset] = &models.Asset{
 				Name:   asset.Asset,
 				Amount: assetAmount,
 				Price:  0,
@@ -113,7 +105,7 @@ func (s *BinanceService) GetStakingAssets() (assets map[string]*Asset, err error
 	return
 }
 
-func (s *BinanceService) GetWalletAssets() ([]Asset, error) {
+func (s *BinanceService) GetWalletAssets() ([]models.Asset, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	snapshot, err := s.client.NewGetAccountSnapshotService().Limit(1).Type("SPOT").Do(ctx)
@@ -123,7 +115,7 @@ func (s *BinanceService) GetWalletAssets() ([]Asset, error) {
 	}
 	wg := sync.WaitGroup{}
 	mutex := sync.Mutex{}
-	assets := make([]Asset, 0)
+	assets := make([]models.Asset, 0)
 	snp := snapshot.Snapshot[0]
 	for _, balance := range snp.Data.Balances {
 		wg.Add(1)
@@ -151,7 +143,7 @@ func (s *BinanceService) GetWalletAssets() ([]Asset, error) {
 					return
 				}
 				mutex.Lock()
-				assets = append(assets, Asset{
+				assets = append(assets, models.Asset{
 					Name:   balance.Asset,
 					Amount: free + locked,
 					Price:  price,
@@ -166,7 +158,7 @@ func (s *BinanceService) GetWalletAssets() ([]Asset, error) {
 	return assets, nil
 }
 
-func (s *BinanceService) GetAssets() ([]Asset, error) {
+func (s *BinanceService) GetAssets() ([]models.Asset, error) {
 	walletAssets, err := s.GetWalletAssets()
 	if err != nil {
 		return nil, err
@@ -175,17 +167,17 @@ func (s *BinanceService) GetAssets() ([]Asset, error) {
 	if err != nil {
 		return nil, err
 	}
-	assets := make([]Asset, 0, len(walletAssets) + len(stakingAssets))
+	assets := make([]models.Asset, 0, len(walletAssets)+len(stakingAssets))
 	for _, asset := range walletAssets {
 		if a, ok := stakingAssets[asset.Name]; ok {
-			assets = append(assets, Asset{
+			assets = append(assets, models.Asset{
 				Name:   asset.Name,
 				Amount: asset.Amount + a.Amount,
 				Price:  asset.Price,
 				Worth:  (asset.Amount + a.Amount) * asset.Price,
 			})
 		} else {
-			assets = append(assets, Asset{
+			assets = append(assets, models.Asset{
 				Name:   asset.Name,
 				Amount: asset.Amount,
 				Price:  asset.Price,

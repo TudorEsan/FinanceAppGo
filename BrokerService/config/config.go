@@ -29,6 +29,8 @@ type Config struct {
 	EncryptionKey []byte
 	MongoTimeout  time.Duration
 	RabbitUrl     string
+	RedisUrl      string
+	RedisPassword string
 }
 
 func getConfig() *Config {
@@ -44,11 +46,18 @@ func getConfig() *Config {
 		panic("Encryption key is not set")
 	}
 
+	if os.Getenv("REDIS_URL") == "" {
+		panic("Redis URL is not set")
+	}
+
+
 	return &Config{
 		MongoUrl:      mongoUrl,
 		EncryptionKey: []byte(os.Getenv("ENCRYPTION_KEY")),
 		MongoTimeout:  mongoTimeout,
 		RabbitUrl:     os.Getenv("RABBIT_URL"),
+		RedisUrl:      os.Getenv("REDIS_URL"),
+		RedisPassword: os.Getenv("REDIS_PASSWORD"),
 	}
 }
 

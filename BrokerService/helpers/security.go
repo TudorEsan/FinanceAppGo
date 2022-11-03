@@ -7,12 +7,15 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+
+	"github.com/TudorEsan/FinanceAppGo/BrokerService/config"
 )
 
 
-func Encrypt(key []byte, text string) string {
+func Encrypt(text string) string {
 	plaintext := []byte(text)
-	
+	conf := config.New()
+	key := conf.EncryptionKey	
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -35,7 +38,9 @@ func Encrypt(key []byte, text string) string {
 }
 
 // decrypt from base64 to decrypted string
-func Decrypt(key []byte, cryptoText string) string {
+func Decrypt(cryptoText string) string {
+	conf := config.New()
+	key := conf.EncryptionKey
 	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
 
 	block, err := aes.NewCipher(key)

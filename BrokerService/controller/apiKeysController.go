@@ -71,8 +71,18 @@ func (controller *ApiKeyController) SetBinanceKeys() gin.HandlerFunc {
 		}
 
 		// encrypt the keys
-		encryptedApiKey := helpers.Encrypt(keys.ApiKey)
-		encryptedSecretKey := helpers.Encrypt(keys.SecretKey)
+		encryptedApiKey, err := helpers.Encrypt(keys.ApiKey)
+		if err != nil {
+			controller.l.Error("Could not encrypt api key", err)
+			c.JSON(400, gin.H{"message": err.Error()})
+			return
+		}
+		encryptedSecretKey, err:= helpers.Encrypt(keys.SecretKey)
+		if err != nil {
+			controller.l.Error("Could not encrypt secret key", err)
+			c.JSON(400, gin.H{"message": err.Error()})
+			return
+		}
 		var user models.User
 
 		ctx, cancel := context.WithTimeout(context.Background(), controller.config.MongoTimeout)

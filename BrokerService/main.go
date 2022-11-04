@@ -20,14 +20,19 @@ func main() {
 	// init controllers 
 	userController := controller.NewUserController(l, mongoClient, messagingClient)
 	userController.StartConsuming()
-	userController.StartUpdatingUserAssets()
+
+	assetsController := controller.NewAssetsController(l, mongoClient)
+	assetsController.StartUpdatingUserAssets()
 
 	// server
 	router := gin.Default()
 
 	// routes
 	keysGroup := router.Group("/keys")
+	assetsGroup := router.Group("/assets")
 	routes.InitKeyRoutes(keysGroup, config, l, mongoClient)
+	routes.InitAssetRoutes(assetsGroup, assetsController)
+	
 
 	router.Run()
 	never := make(chan bool)

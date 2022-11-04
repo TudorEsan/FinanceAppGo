@@ -38,6 +38,10 @@ func getConfig() *Config {
 	mongoUrl := "mongodb://localhost:27017"
 	mongoTimeout := time.Second * 10
 
+	if os.Getenv("TESTING") != "" {
+		goto ReturnConfig
+	}
+
 	if os.Getenv("MONGO_URL") != "" {
 		mongoUrl = os.Getenv("MONGO_URL")
 	}
@@ -50,7 +54,7 @@ func getConfig() *Config {
 		panic("Redis URL is not set")
 	}
 
-
+ReturnConfig:
 	return &Config{
 		MongoUrl:      mongoUrl,
 		EncryptionKey: []byte(os.Getenv("ENCRYPTION_KEY")),

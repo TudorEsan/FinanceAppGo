@@ -13,7 +13,7 @@ type User struct {
 
 type UserAssets struct {
 	Id     primitive.ObjectID `json:"id" bson:"_id"`
-	UserId primitive.ObjectID `json:"userId" bson:"userId"`
+	UserId primitive.ObjectID `json:"-" bson:"userId"`
 	Assets []Asset            `json:"assets" bson:"assets"`
 	Date   time.Time          `json:"date" bson:"date"`
 }

@@ -35,6 +35,11 @@ type Config struct {
 func getConfig() *Config {
 	jwtSecret := []byte("secret")
 	mongoUrl := "mongodb://localhost:27017"
+
+	if os.Getenv("TESTING") != "" {
+		goto ReturnConfig
+	}
+
 	if os.Getenv("JWT_SECRET") != "" {
 		jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 	}
@@ -45,6 +50,8 @@ func getConfig() *Config {
 	if os.Getenv("RABBIT_URL") == "" {
 		panic("RabbitMQ URL is not set")
 	}
+
+	ReturnConfig:
 
 	return &Config{
 		MongoUrl:     mongoUrl,

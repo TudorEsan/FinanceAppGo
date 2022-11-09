@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"os"
+
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -10,9 +11,9 @@ import (
 var SECRET_KEY []byte = getSecretKey()
 
 type SignedDetails struct {
-	Email    string
-	Username string
-	Id       string
+	Email          string
+	Username       string
+	Id             string
 	EmailValidated bool
 	jwt.StandardClaims
 }

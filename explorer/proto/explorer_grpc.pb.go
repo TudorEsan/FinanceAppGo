@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AddressExplorerClient interface {
 	GetBtcBallance(ctx context.Context, in *Address, opts ...grpc.CallOption) (*AddressOverview, error)
 	GetEthBallance(ctx context.Context, in *Address, opts ...grpc.CallOption) (*AddressOverview, error)
+	GetErc20TokenHoldings(ctx context.Context, in *Address, opts ...grpc.CallOption) (*WalletOverview, error)
 }
 
 type addressExplorerClient struct {
@@ -52,12 +53,22 @@ func (c *addressExplorerClient) GetEthBallance(ctx context.Context, in *Address,
 	return out, nil
 }
 
+func (c *addressExplorerClient) GetErc20TokenHoldings(ctx context.Context, in *Address, opts ...grpc.CallOption) (*WalletOverview, error) {
+	out := new(WalletOverview)
+	err := c.cc.Invoke(ctx, "/AddressExplorer/GetErc20TokenHoldings", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AddressExplorerServer is the server API for AddressExplorer service.
 // All implementations must embed UnimplementedAddressExplorerServer
 // for forward compatibility
 type AddressExplorerServer interface {
 	GetBtcBallance(context.Context, *Address) (*AddressOverview, error)
 	GetEthBallance(context.Context, *Address) (*AddressOverview, error)
+	GetErc20TokenHoldings(context.Context, *Address) (*WalletOverview, error)
 	mustEmbedUnimplementedAddressExplorerServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedAddressExplorerServer) GetBtcBallance(context.Context, *Addre
 }
 func (UnimplementedAddressExplorerServer) GetEthBallance(context.Context, *Address) (*AddressOverview, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEthBallance not implemented")
+}
+func (UnimplementedAddressExplorerServer) GetErc20TokenHoldings(context.Context, *Address) (*WalletOverview, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetErc20TokenHoldings not implemented")
 }
 func (UnimplementedAddressExplorerServer) mustEmbedUnimplementedAddressExplorerServer() {}
 
@@ -120,6 +134,24 @@ func _AddressExplorer_GetEthBallance_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AddressExplorer_GetErc20TokenHoldings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Address)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AddressExplorerServer).GetErc20TokenHoldings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AddressExplorer/GetErc20TokenHoldings",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AddressExplorerServer).GetErc20TokenHoldings(ctx, req.(*Address))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AddressExplorer_ServiceDesc is the grpc.ServiceDesc for AddressExplorer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var AddressExplorer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEthBallance",
 			Handler:    _AddressExplorer_GetEthBallance_Handler,
+		},
+		{
+			MethodName: "GetErc20TokenHoldings",
+			Handler:    _AddressExplorer_GetErc20TokenHoldings_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

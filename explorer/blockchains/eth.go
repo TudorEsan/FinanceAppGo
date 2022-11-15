@@ -1,4 +1,4 @@
-package main
+package blockchains
 
 import (
 	"log"
@@ -22,13 +22,13 @@ func getEthFromAddress(address string) (models.AddressOverview, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		return models.AddressOverview{}, err
 	}
 
 	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		return models.AddressOverview{}, err
 	}
 
 	card := doc.Find("div.card-body").First()

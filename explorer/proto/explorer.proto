@@ -1,0 +1,21 @@
+
+syntax="proto3";
+option go_package = "github.com/github.com/TudorEsan/FinanceAppGo/explorer";
+
+
+service AddressExplorer {
+  rpc GetBtcBallance (Address) returns (AddressOverview) {}
+  rpc GetEthBallance (Address) returns (AddressOverview) {}
+}
+
+message AddressOverview {
+  string Blockchain = 1;
+  float  Balance = 2;
+  float  UsdBallance = 3;
+}
+
+message Address {
+  string Address = 1;
+}
+
+

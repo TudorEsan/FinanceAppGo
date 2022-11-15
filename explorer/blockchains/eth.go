@@ -13,7 +13,7 @@ import (
 
 
 
-func getEthFromAddress(address string) (models.AddressOverview, error) {
+func GetEthFromAddress(address string) (models.AddressOverview, error) {
 	explorerDomain := "https://etherscan.io/address/"
 
 	res, err := http.Get(explorerDomain + address)

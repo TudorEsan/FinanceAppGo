@@ -1,6 +1,7 @@
 import  Puppeteer  from "puppeteer";
+import { AddressExplorerResponse } from "../types/explorerTypes";
 
-export const getSolBalance = async (address: string): Promise<number> => {
+export const getSolBalance = async (address: string): Promise<AddressExplorerResponse> => {
   const browser = await Puppeteer.launch({ headless: true, waitForInitialPage: true });
   const page = await browser.newPage();
   console.log("page: ", 'https://explorer.solana.com/address/' + address);
@@ -13,9 +14,10 @@ export const getSolBalance = async (address: string): Promise<number> => {
   });
   const [solBalanceStr, usdBalanceStr] = balanceText.split(" SOL ")
   const solBalance = Number(solBalanceStr.replace(/,/g, ""));
-  console.log(usdBalanceStr.replace(/,/g, "").replace("$", "").replace("(", "").replace(")", "").trim())
   const usdBalance = Number(usdBalanceStr.replace(/,/g, "").replace("$", "").replace("(", "").replace(")", "").trim());
-  console.log(solBalance)
-  console.log(usdBalance)
-  return 0;
+  return {
+    token: 'SOL',
+    balance: solBalance,
+    usdBalance: usdBalance
+  }
 };

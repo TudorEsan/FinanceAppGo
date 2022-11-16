@@ -1,6 +1,9 @@
 import Puppeteer from "puppeteer";
+import { AddressExplorerResponse } from "../types/explorerTypes";
 
-export const getBtcBalance = async (address: string): Promise<number> => {
+export const getBtcBalance = async (
+  address: string
+): Promise<AddressExplorerResponse> => {
   const browser = await Puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.goto(`https://www.blockchain.com/btc/address/${address}`);
@@ -25,9 +28,12 @@ export const getBtcBalance = async (address: string): Promise<number> => {
     let usdBalance = balanceText.textContent.slice(i + 2, j).trim(); // exclude the $ sign too
     // replace all commas with empty string
     const usdBallanceNumber = Number(usdBalance.replace(/,/g, ""));
-    console.log(usdBalance)
-    return { balance: btcBalance, usdBalance: usdBallanceNumber};
+    console.log(usdBalance);
+    return { balance: btcBalance, usdBalance: usdBallanceNumber };
   });
-  console.log(balance);
-  return 0;
+  return {
+    token: "BTC",
+    balance: balance.balance,
+    usdBalance: balance.usdBalance,
+  };
 };

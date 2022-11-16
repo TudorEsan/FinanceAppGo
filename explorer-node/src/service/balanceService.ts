@@ -1,8 +1,8 @@
-import grpc from "@grpc/grpc-js";
-import protoLoader from "@grpc/proto-loader";
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from '@grpc/proto-loader';
 import { BalanceServiceHandlers } from "../proto/BalanceService";
 import { ProtoGrpcType } from "../proto/explorer";
-const PROTO_PATH = "../proto/explorer.proto";
+const PROTO_PATH = "src/proto/balanceService.proto";
 
 const options = {
   keepCase: true,
@@ -32,7 +32,7 @@ const balanceServer: BalanceServiceHandlers = {
 };
 
 export function getBalanceServer(): grpc.Server {
-  const packageDefinition = protoLoader.loadSync('./proto/example.proto');
+  const packageDefinition = protoLoader.loadSync(PROTO_PATH);
   const proto = (grpc.loadPackageDefinition(
     packageDefinition
   ) as unknown) as ProtoGrpcType;

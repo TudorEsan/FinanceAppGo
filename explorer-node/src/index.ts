@@ -5,15 +5,25 @@ import { getBtcBalance } from "./webscrapingMethods/btcExplorer";
 import { getSolBalance } from "./webscrapingMethods/solExplorer";
 import { getAdaBalance } from "./webscrapingMethods/adaExplorer";
 import { getDotBalance } from "./webscrapingMethods/dotExplorer";
+import { getBalanceServer } from "./service/balanceService";
+import * as grpc from "@grpc/grpc-js";
+
 dontenv.config();
 
 const main = async () => {
-  try {
-
-    console.log(await getDotBalance("1jZqirgn6ECrqwYNGUT1No9QSBWTatCkCe2nRzxFw2ufbyN"))
-  } catch(e) {
-    console.log("error: ", e)
-  }
+  const balanceServer = getBalanceServer();
+  balanceServer.bindAsync(
+    "localhost:8083",
+    grpc.ServerCredentials.createInsecure(),
+    (err) => {
+      if (err) {
+        console.error(err);
+        return
+      }
+      console.log("Server running at http://localhost:8082");
+      balanceServer.start();
+    }
+  );
 };
 
 main();

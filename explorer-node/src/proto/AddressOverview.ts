@@ -1,4 +1,4 @@
-// Original file: src/proto/explorer.proto
+// Original file: src/proto/balanceService.proto
 
 
 export interface AddressOverview {

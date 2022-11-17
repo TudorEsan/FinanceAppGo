@@ -1,10 +1,10 @@
-// Original file: src/proto/explorer.proto
+// Original file: src/proto/balanceService.proto
 
 
 export interface Address {
-  'Address'?: (string);
+  'Addresses'?: (string)[];
 }
 
 export interface Address__Output {
-  'Address': (string);
+  'Addresses': (string)[];
 }

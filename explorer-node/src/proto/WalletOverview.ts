@@ -1,4 +1,4 @@
-// Original file: src/proto/explorer.proto
+// Original file: src/proto/balanceService.proto
 
 import type { AddressOverview as _AddressOverview, AddressOverview__Output as _AddressOverview__Output } from './AddressOverview';
 

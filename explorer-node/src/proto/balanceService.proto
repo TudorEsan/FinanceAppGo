@@ -21,7 +21,7 @@ message WalletOverview {
 }
 
 message Address {
-  string Address = 1;
+  repeated string Addresses = 1;
 }
 
 

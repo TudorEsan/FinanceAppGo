@@ -1,4 +1,4 @@
-// Original file: src/proto/explorer.proto
+// Original file: src/proto/balanceService.proto
 
 import type * as grpc from '@grpc/grpc-js'
 import type { MethodDefinition } from '@grpc/proto-loader'

@@ -4,7 +4,7 @@ import { AddressExplorerResponse } from "../types/explorerTypes";
 export const getBtcBalance = async (
   address: string
 ): Promise<AddressExplorerResponse> => {
-  const browser = await Puppeteer.launch({ headless: false });
+  const browser = await Puppeteer.launch({ headless: true });
   const page = await browser.newPage();
   await page.goto(`https://www.blockchain.com/btc/address/${address}`);
   const balance = await page.evaluate(() => {

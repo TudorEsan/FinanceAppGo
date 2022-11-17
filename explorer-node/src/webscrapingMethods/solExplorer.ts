@@ -2,7 +2,7 @@ import  Puppeteer  from "puppeteer";
 import { AddressExplorerResponse } from "../types/explorerTypes";
 
 export const getSolBalance = async (address: string): Promise<AddressExplorerResponse> => {
-  const browser = await Puppeteer.launch({ headless: true, waitForInitialPage: true });
+  const browser = await Puppeteer.launch({ headless: false, waitForInitialPage: true });
   const page = await browser.newPage();
   console.log("page: ", 'https://explorer.solana.com/address/' + address);
   await page.goto(`https://solscan.io/account/${address}`, {

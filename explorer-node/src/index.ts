@@ -20,8 +20,9 @@ const main = async () => {
         console.error(err);
         return
       }
-      console.log("Server running at http://localhost:8082");
+      console.log("Server running at http://localhost:8083");
       balanceServer.start();
+      
     }
   );
 };

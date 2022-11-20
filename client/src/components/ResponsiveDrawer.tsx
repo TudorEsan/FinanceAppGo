@@ -16,10 +16,16 @@ import MailIcon from "@mui/icons-material/Mail";
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { CalendarMonth, Dashboard } from "@mui/icons-material";
+import {
+  CalendarMonth,
+  Dashboard,
+  LiveHelp,
+  SettingsApplications,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Button } from "@mui/material";
+import CandlestickChartIcon from "@mui/icons-material/CandlestickChart";
 
 const drawerWidth = 240;
 
@@ -52,7 +58,12 @@ export default function ResponsiveDrawer(props: Props) {
       <Divider />
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate("/")}>
+          <ListItemButton
+            onClick={() => {
+              navigate("/");
+              handleDrawerToggle();
+            }}
+          >
             <ListItemIcon sx={{ ml: 2 }}>
               <Dashboard />
             </ListItemIcon>
@@ -60,11 +71,29 @@ export default function ResponsiveDrawer(props: Props) {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate("/records")}>
+          <ListItemButton
+            onClick={() => {
+              navigate("/records");
+              handleDrawerToggle();
+            }}
+          >
             <ListItemIcon sx={{ ml: 2 }}>
               <CalendarMonth />
             </ListItemIcon>
             <ListItemText primary="Records" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => {
+              navigate("/live-tracking");
+              handleDrawerToggle();
+            }}
+          >
+            <ListItemIcon sx={{ ml: 2 }}>
+              <CandlestickChartIcon />
+            </ListItemIcon>
+            <ListItemText primary="Live Tracking" />
           </ListItemButton>
         </ListItem>
       </List>
@@ -168,6 +197,9 @@ const AppBarContents = () => {
   return (
     <>
       <Box sx={{ ml: "auto", display: "flex", justifyContent: "right" }}>
+        <IconButton>
+          <SettingsApplications />
+        </IconButton>
         <Button variant="outlined" onClick={logout}>
           Logout
         </Button>

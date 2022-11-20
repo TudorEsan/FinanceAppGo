@@ -4,6 +4,8 @@ import {
   AddRecord,
   Dashboard,
   EditRecord,
+  LiveTracking,
+  LiveTrackingSettings,
   Login,
   Record,
   Records,
@@ -32,6 +34,22 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Records />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/live-tracking-settings"
+        element={
+          <ProtectedRoute>
+            <LiveTrackingSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/live-tracking"
+        element={
+          <ProtectedRoute>
+            <LiveTracking />
           </ProtectedRoute>
         }
       />

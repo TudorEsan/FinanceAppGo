@@ -29,6 +29,6 @@ export const useLiveTrackingSettings = () => {
 
 
   return {
-      binanceKeys, dataLoading, actionLoading, walletAddresses
+      binanceKeys, dataLoading, actionLoading, walletAddresses, addWalletAddress, removeWalletAddress, addBinanceKeys, removeBinanceKeys, error
   }
 }

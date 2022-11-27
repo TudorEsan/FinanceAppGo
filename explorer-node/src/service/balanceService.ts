@@ -7,6 +7,9 @@ import { getAdaBalance } from "../webscrapingMethods/adaExplorer";
 import { getBtcBalance } from "../webscrapingMethods/btcExplorer";
 import { getDotBalance } from "../webscrapingMethods/dotExplorer";
 import { getSolBalance } from "../webscrapingMethods/solExplorer";
+import { getErc20Holdings } from "../webscrapingMethods/erc20Explorer";
+import { ICoinsObject } from "../types/explorerTypes";
+import { Coins } from "../proto/Coins";
 
 const PROTO_PATH = "src/proto/balanceService.proto";
 
@@ -29,9 +32,9 @@ const balanceServer: BalanceServiceHandlers = {
     };
     for (let address of addresses) {
       try {
-        const balance = await getAdaBalance(address);
-        balance.balance += balance.balance;
-        balance.usdBalance += balance.usdBalance;
+        const res = await getAdaBalance(address);
+        balance.balance += res.balance;
+        balance.usdBalance += res.usdBalance;
       } catch (e) {
         console.error(e);
       }
@@ -52,9 +55,10 @@ const balanceServer: BalanceServiceHandlers = {
     };
     for (let address of addresses) {
       try {
-        const balance = await getBtcBalance(address);
-        balance.balance += balance.balance;
-        balance.usdBalance += balance.usdBalance;
+        const res = await getBtcBalance(address);
+        console.log('balance', balance)
+        balance.balance += res.balance;
+        balance.usdBalance += res.usdBalance;
       } catch (e) {
         console.error(e);
       }
@@ -75,13 +79,14 @@ const balanceServer: BalanceServiceHandlers = {
     };
     for (let address of addresses) {
       try {
-        const balance = await getDotBalance(address);
-        balance.balance += balance.balance;
-        balance.usdBalance += balance.usdBalance;
+        const res = await getDotBalance(address);
+        balance.balance += res.balance;
+        balance.usdBalance += res.usdBalance;
       } catch (e) {
         console.error(e);
       }
     }
+
     callback(null, {
       Balance: balance.balance,
       UsdBallance: balance.usdBalance,
@@ -98,9 +103,9 @@ const balanceServer: BalanceServiceHandlers = {
     };
     for (let address of addresses) {
       try {
-        const balance = await getSolBalance(address);
-        balance.balance += balance.balance;
-        balance.usdBalance += balance.usdBalance;
+        const res = await getSolBalance(address);
+        balance.balance += res.balance;
+        balance.usdBalance += res.usdBalance;
       } catch (e) {
         console.error(e);
       }
@@ -111,6 +116,37 @@ const balanceServer: BalanceServiceHandlers = {
       Token: "SOL",
     });
   },
+  GetErc20Balance: async (call, callback) => {
+    console.log("GetEtc20Balance: ", call.request);
+    const addresses = call.request.Addresses;
+    const coins: ICoinsObject = {};
+    for (let address of addresses) {
+      try {
+        const res = await getErc20Holdings(address);
+        for (let coin of res) {
+          if (coins[coin.token]) {
+            coins[coin.token].balance += coin.balance;
+            coins[coin.token].usdBalance += coin.usdBalance;
+          } else {
+            coins[coin.token] = coin;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    // convert object to array
+    const coinsArray: Coins = {
+      coins: Object.keys(coins).map((key) => {
+        return {
+          Balance: coins[key].balance,
+          UsdBallance: coins[key].usdBalance,
+          Token: coins[key].token,
+        };
+      })
+    }
+    callback(null, coinsArray);
+  }
 };
 
 export function getBalanceServer(): grpc.Server {

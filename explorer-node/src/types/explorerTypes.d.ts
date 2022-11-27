@@ -5,3 +5,7 @@ export interface AddressExplorerResponse {
   usdBalance: number;
 }
 
+export interface ICoinsObject {
+  [key: string]: AddressExplorerResponse;
+}
+

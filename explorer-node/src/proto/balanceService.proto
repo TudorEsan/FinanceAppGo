@@ -8,6 +8,11 @@ service BalanceService {
   rpc GetDotBalance (Address) returns (AddressOverview) {}
   rpc GetSolBalance (Address) returns (AddressOverview) {}
   rpc GetAdaBalance (Address) returns (AddressOverview) {}
+  rpc GetErc20Balance (Address) returns (Coins) {}
+}
+
+message Coins {
+  repeated AddressOverview coins = 1;
 }
 
 message AddressOverview {

@@ -13,14 +13,14 @@ dontenv.config();
 const main = async () => {
   const balanceServer = getBalanceServer();
   balanceServer.bindAsync(
-    "localhost:8083",
+    "0.0.0.0:8083",
     grpc.ServerCredentials.createInsecure(),
     (err) => {
       if (err) {
         console.error(err);
         return
       }
-      console.log("Server running at http://localhost:8083");
+      console.log("Server running at http://0.0.0.0:8083");
       balanceServer.start();
       
     }

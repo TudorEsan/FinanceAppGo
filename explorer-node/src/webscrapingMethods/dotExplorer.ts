@@ -7,6 +7,8 @@ export const getDotBalance = async (
   const browser = await Puppeteer.launch({
     headless: true,
     waitForInitialPage: true,
+    executablePath: '/usr/bin/chromium-browser',
+    args: ['--no-sandbox']
   });
   const page = await browser.newPage();
   await page.goto(`https://polkadot.subscan.io/account/${address}`, {

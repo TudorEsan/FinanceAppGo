@@ -1,21 +1,14 @@
-import type * as grpc from '@grpc/grpc-js';
-import type { MessageTypeDefinition } from '@grpc/proto-loader';
+// Original file: src/proto/balanceService.proto
 
-import type { BalanceServiceClient as _BalanceServiceClient, BalanceServiceDefinition as _BalanceServiceDefinition } from './BalanceService';
+import type * as grpc from '@grpc/grpc-js'
+import type { MethodDefinition } from '@grpc/proto-loader'
+import type { Address as _Address, Address__Output as _Address__Output } from './Address';
+import type { AddressOverview as _AddressOverview, AddressOverview__Output as _AddressOverview__Output } from './AddressOverview';
+import type { Coins as _Coins, Coins__Output as _Coins__Output } from './Coins';
 
-type SubtypeConstructor<Constructor extends new (...args: any) => any, Subtype> = {
-  new(...args: ConstructorParameters<Constructor>): Subtype;
-};
-
-export interface ProtoGrpcType {
-  Address: MessageTypeDefinition
-  AddressOverview: MessageTypeDefinition
-  BalanceService: SubtypeConstructor<typeof grpc.Client, _BalanceServiceClient> & { service: _BalanceServiceDefinition }
-  Coins: MessageTypeDefinition
-  WalletOverview: MessageTypeDefinition
-}
-
-ument: _Address, metadata: grpc.Metadata, callback: grpc.requestCallback<_AddressOverview__Output>): grpc.ClientUnaryCall;
+export interface BalanceServiceClient extends grpc.Client {
+  GetAdaBalance(argument: _Address, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_AddressOverview__Output>): grpc.ClientUnaryCall;
+  GetAdaBalance(argument: _Address, metadata: grpc.Metadata, callback: grpc.requestCallback<_AddressOverview__Output>): grpc.ClientUnaryCall;
   GetAdaBalance(argument: _Address, options: grpc.CallOptions, callback: grpc.requestCallback<_AddressOverview__Output>): grpc.ClientUnaryCall;
   GetAdaBalance(argument: _Address, callback: grpc.requestCallback<_AddressOverview__Output>): grpc.ClientUnaryCall;
   getAdaBalance(argument: _Address, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_AddressOverview__Output>): grpc.ClientUnaryCall;

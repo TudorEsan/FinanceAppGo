@@ -6,8 +6,9 @@ export const getErc20Holdings = async (
 ): Promise<AddressExplorerResponse[]> => {
   const browser = await Puppeteer.launch({
     headless: true,
-    args: ["--window-size=2160,3840"],
+    args: ["--window-size=2160,3840", "--no-sandbox"],
     waitForInitialPage: true,
+    executablePath: '/usr/bin/chromium-browser'
   });
   const page = await browser.newPage();
   page.setViewport({ width: 3840, height: 2160 });
